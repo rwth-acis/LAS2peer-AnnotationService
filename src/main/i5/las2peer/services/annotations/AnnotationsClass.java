@@ -32,11 +32,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.arangodb.ArangoDriver;
+import com.arangodb.entity.CursorEntity;
+import com.arangodb.entity.DocumentEntity;
 import com.arangodb.entity.EdgeDefinitionEntity;
+import com.arangodb.entity.EdgeEntity;
 import com.arangodb.entity.GraphEntity;
+import com.arangodb.entity.PlainEdgeEntity;
 import com.mysql.jdbc.ResultSetMetaData;
 
 import net.minidev.json.JSONArray;
@@ -72,6 +77,9 @@ public class AnnotationsClass extends Service {
 	private DatabaseManager dbm;
 	
 	private String epUrl;
+	GraphEntity graphNew;
+	DocumentEntity<Video>  id1, id2;
+	DocumentEntity<Annotation>  ann1, ann2, ann3;
 
 	public AnnotationsClass() {
 		// read and set properties values
@@ -213,31 +221,32 @@ public class AnnotationsClass extends Service {
 				List<EdgeDefinitionEntity> edgeDefinitions = new ArrayList<EdgeDefinitionEntity>();
 				
 				// We start with one edge definition:
-				EdgeDefinitionEntity edgeDefHasWritten = new EdgeDefinitionEntity();
+				EdgeDefinitionEntity edgeDefHasAnnotated = new EdgeDefinitionEntity();
 
 				// Define the edge collection...
-				edgeDefHasWritten.setCollection("HasWritten");
+				edgeDefHasAnnotated.setCollection("annotated");
 
 				// ... and the vertex collection(s) where an edge starts...
 				List<String> from = new ArrayList<String>();
-				from.add("Person");
-				edgeDefHasWritten.setFrom(from);
+				from.add("Videos");
+				edgeDefHasAnnotated.setFrom(from);
 
 				// ... and ends.
 				List<String> to = new ArrayList<String>();
-				to.add("Publication");
-				edgeDefHasWritten.setTo(to);
+				to.add("Annotations");
+				edgeDefHasAnnotated.setTo(to);
 
 				// add the edge definition to the list
-				edgeDefinitions.add(edgeDefHasWritten);
+				edgeDefinitions.add(edgeDefHasAnnotated);
 
 				// We do not need any orphan collections, so this is just an empty list
 				List<String> orphanCollections = new ArrayList<String>();
-				
+				orphanCollections.add("Videos");
+				orphanCollections.add("Annotations");
 				// Create the graph:
-				GraphEntity graphNew = conn.createGraph("Academical", edgeDefinitions, orphanCollections, true);
+				graphNew = conn.createGraph("Video", edgeDefinitions, orphanCollections, true);
 				
-				result = "Name:2";
+				result = "Name: " + graphNew.getName() + "Key: " + graphNew.getDocumentHandle();
 				
 				// return 
 				HttpResponse r = new HttpResponse(result);
@@ -299,8 +308,284 @@ public class AnnotationsClass extends Service {
 		}
 	}
 	
-
+	/**
+	 * Add new vertexes
+	 * @return HttpResponse 
+	 */
 	
+	@PUT
+	@Path("vertex")
+	@Summary("Insert new vertex")
+	@Notes("Requires authentication.")
+	@ApiResponses(value={
+			@ApiResponse(code = 200, message = "Vertex saved successfully."),
+			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 409, message = "Vertex already exists."),
+			@ApiResponse(code = 500, message = "Internal error.")	
+	})
+	public HttpResponse addNewVertex(){
+		
+		String result = "";
+		ArangoDriver conn = null;
+		PreparedStatement stmnt = null;
+		ResultSet rs = null;
+		java.util.Date date= new java.util.Date();
+		try {
+			JSONObject o;
+			conn= dbm.getConnection();
+			if(getActiveAgent().getId() == getActiveNode().getAnonymous().getId()){
+				
+				id1 = conn.graphCreateVertex("Video", "Videos", new Video("1", "TestVideo1"), true);
+				id2 = conn.graphCreateVertex("Video", "Videos", new Video("2", "TestVideo2"), true);
+				ann1 = conn.graphCreateVertex("Video", "Annotations", new Annotation("1", "Annotation1"), true);
+				ann2 = conn.graphCreateVertex("Video", "Annotations", new Annotation("2", "Annotation2"), true);
+				ann3 = conn.graphCreateVertex("Video", "Annotations", new Annotation("3", "Annotation3"), true);
+				result = "Comleted Succesfully";
+
+				// return 
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(200);
+				return r;
+				
+			}else{
+				result = "User in not authenticated";
+				
+				// return 
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(401);
+				return r;		
+			}
+			
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {
+			// free resources if exception or not
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (stmnt != null) {
+				try {
+					stmnt.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Add new vertexes
+	 * @return HttpResponse 
+	 */
+	
+	@PUT
+	@Path("edge")
+	@Summary("Insert new edge")
+	@Notes("Requires authentication.")
+	@ApiResponses(value={
+			@ApiResponse(code = 200, message = "Edge saved successfully."),
+			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 409, message = "Edge already exists."),
+			@ApiResponse(code = 500, message = "Internal error.")	
+	})
+	public HttpResponse addNewEdge(){
+		
+		String result = "";
+		ArangoDriver conn = null;
+		PreparedStatement stmnt = null;
+		ResultSet rs = null;
+		java.util.Date date= new java.util.Date();
+		try {
+			JSONObject o;
+			conn= dbm.getConnection();
+			if(getActiveAgent().getId() == getActiveNode().getAnonymous().getId()){
+				
+				EdgeEntity<String> edg1 = conn.graphCreateEdge("Video", "annotated", null, id1.getDocumentHandle(), ann1.getDocumentHandle());
+				EdgeEntity<String> edg2 = conn.graphCreateEdge("Video", "annotated", null, id1.getDocumentHandle(), ann3.getDocumentHandle());
+				EdgeEntity<String> edg3 = conn.graphCreateEdge("Video", "annotated", null, id2.getDocumentHandle(), ann2.getDocumentHandle());
+				EdgeEntity<String> edg4 = conn.graphCreateEdge("Video", "annotated", null, id2.getDocumentHandle(), ann3.getDocumentHandle());
+				result = "Comleted Succesfully";
+				
+				// return 
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(200);
+				return r;
+				
+			}else{
+				result = "User in not authenticated";
+				
+				// return 
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(401);
+				return r;		
+			}
+			
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {
+			// free resources if exception or not
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (stmnt != null) {
+				try {
+					stmnt.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+	}
+	
+	@GET
+	@Path("graph")
+	@ResourceListApi(description = "Return details for a selected graph")
+	@Summary("return a JSON with graph details stored for the given graph Name")
+	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value={
+			@ApiResponse(code = 200, message = "Video details"),
+			@ApiResponse(code = 404, message = "Video id does not exist"),
+			@ApiResponse(code = 500, message = "Internal error"),
+	})
+	public HttpResponse getGraphDetails() {
+		String result = "";
+		String columnName="";
+		String selectquery ="";
+		int columnCount = 0;
+		ArangoDriver conn = null;
+		PreparedStatement stmnt = null;
+		ResultSet rs = null;
+		ResultSetMetaData rsmd = null;
+		JSONObject ro=null;
+		JSONArray qs = new JSONArray();
+		try {
+			// get connection from connection pool
+			conn = dbm.getConnection();
+			selectquery = "for v in GRAPH_VERTICES ('Video', {}) return v";
+		    String query = "for i in GRAPH_EDGES('Video', null) return i";
+		    
+		    CursorEntity<PlainEdgeEntity> res = conn.executeQuery(query, null, PlainEdgeEntity.class, true, 100);
+		   
+		    Iterator<PlainEdgeEntity> iterator = res.iterator();
+		    while(iterator.hasNext()) {
+		    	ro = new JSONObject();
+		    	PlainEdgeEntity edge = (PlainEdgeEntity) iterator.next();
+		    	ro.put("Edge ", edge.getDocumentHandle());
+		    	ro.put("From ", edge.getFromCollection());
+		    	ro.put("To ", edge.getToCollection());
+		    	qs.add(ro);
+		    }
+		    
+		    
+		    CursorEntity<Video> resVertex = conn.executeQuery(selectquery, null, Video.class, true, 100);
+		    Iterator<Video> iterator_vertex = resVertex.iterator();
+		    while(iterator_vertex.hasNext()) {
+		    	ro = new JSONObject();
+		    	Video v = (Video) iterator_vertex.next();
+		    	ro.put("Id ", v.getId());
+		    	ro.put("Title ", v.getTitle());
+		    	qs.add(ro);
+		    }
+			// prepare statement			
+				
+			// return HTTP Response on success
+			HttpResponse r = new HttpResponse(qs.toJSONString());
+			r.setStatus(200);
+			return r;
+			
+			
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {
+			// free resources
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (stmnt != null) {
+				try {
+					stmnt.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+			
+		}
+	}
 	
 	
 	// ================= Swagger Resource Listing & API Declarations =====================
