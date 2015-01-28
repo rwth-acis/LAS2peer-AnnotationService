@@ -34,6 +34,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.entity.CursorEntity;
@@ -42,6 +43,7 @@ import com.arangodb.entity.EdgeDefinitionEntity;
 import com.arangodb.entity.EdgeEntity;
 import com.arangodb.entity.GraphEntity;
 import com.arangodb.entity.PlainEdgeEntity;
+import com.arangodb.util.MapBuilder;
 import com.mysql.jdbc.ResultSetMetaData;
 
 import net.minidev.json.JSONArray;
@@ -536,12 +538,41 @@ public class AnnotationsClass extends Service {
 		    
 		    
 		    CursorEntity<Video> resVertex = conn.executeQuery(selectquery, null, Video.class, true, 100);
-		    Iterator<Video> iterator_vertex = resVertex.iterator();
-		    while(iterator_vertex.hasNext()) {
+		    Iterator<Video> iteratorVertex = resVertex.iterator();
+		    while(iteratorVertex.hasNext()) {
 		    	ro = new JSONObject();
-		    	Video v = (Video) iterator_vertex.next();
+		    	Video v = (Video) iteratorVertex.next();
 		    	ro.put("Id ", v.getId());
 		    	ro.put("Title ", v.getTitle());
+		    	qs.add(ro);
+		    }
+		    
+		    Map<String, Object> exampleVertexMap = new MapBuilder().put("id", "1").get();
+		    String getVertexByID = "for i in GRAPH_VERTICES('Video', @id,{vertexCollecitonRestriction:'Videos'}) return i";
+		    Map<String, Object> bindVars = new MapBuilder().put("id", exampleVertexMap).get();
+		    CursorEntity<Video> resVertexById = conn.executeQuery(getVertexByID, bindVars, Video.class, true, 1);
+		    Iterator<Video> iteratorVertexById = resVertexById.iterator();
+		    Video v = null;
+		    if(iteratorVertexById.hasNext()) {
+		    	ro = new JSONObject();
+		    	v = (Video) iteratorVertexById.next();
+		    	ro.put("SelectedId ", v.getId());
+		    	ro.put("SelectedTitle ", v.getTitle());
+		    	qs.add(ro);
+		    }
+		    
+		    String getAnnotations = "for i in GRAPH_NEIGHBORS('Video', @selectedVideo, {endVertexCollectionRestriction : 'Annotations'}) return i.vertex";
+		    Map<String, Object> bindVars2 = new MapBuilder().put("selectedVideo",v).get();
+		    
+		    CursorEntity<Annotation> resAnnotation = conn.executeQuery(getAnnotations, bindVars2, Annotation.class, true, 100);
+		    
+		    qs.add("Vertices that have inbound edge with TestVideo 1");
+		    Iterator<Annotation> iteratorAnnotation = resAnnotation.iterator();
+		    while(iteratorAnnotation.hasNext()) {
+		    	ro = new JSONObject();
+		    	Annotation a = (Annotation) iteratorAnnotation.next();
+		    	ro.put("Id ", a.getId());
+		    	ro.put("Title ", a.getTitle());
 		    	qs.add(ro);
 		    }
 			// prepare statement			
