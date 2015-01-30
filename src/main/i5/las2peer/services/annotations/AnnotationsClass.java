@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.entity.CursorEntity;
@@ -337,11 +338,16 @@ public class AnnotationsClass extends Service {
 			conn= dbm.getConnection();
 			if(getActiveAgent().getId() == getActiveNode().getAnonymous().getId()){
 				
-				id1 = conn.graphCreateVertex("Video", "Videos", new Video("1", "TestVideo1"), true);
+				/*id1 = conn.graphCreateVertex("Video", "Videos", new Video("1", "TestVideo1"), true);
 				id2 = conn.graphCreateVertex("Video", "Videos", new Video("2", "TestVideo2"), true);
 				ann1 = conn.graphCreateVertex("Video", "Annotations", new Annotation("1", "Annotation1"), true);
 				ann2 = conn.graphCreateVertex("Video", "Annotations", new Annotation("2", "Annotation2"), true);
-				ann3 = conn.graphCreateVertex("Video", "Annotations", new Annotation("3", "Annotation3"), true);
+				ann3 = conn.graphCreateVertex("Video", "Annotations", new Annotation("3", "Annotation3"), true);*/
+				
+				for(int i=0;i<500;i++){
+					conn.graphCreateVertex("Video", "Videos", new Video(Integer.toString(i+2), "TestVideo" + Integer.toString(i+2) ), true);
+					conn.graphCreateVertex("Video", "Annotations", new Annotation(Integer.toString(i+3), "Annotation"  + Integer.toString(i+3)), true);
+				}
 				result = "Comleted Succesfully";
 
 				// return 
@@ -431,10 +437,36 @@ public class AnnotationsClass extends Service {
 			conn= dbm.getConnection();
 			if(getActiveAgent().getId() == getActiveNode().getAnonymous().getId()){
 				
-				EdgeEntity<String> edg1 = conn.graphCreateEdge("Video", "annotated", null, id1.getDocumentHandle(), ann1.getDocumentHandle());
+				//id1 = conn.graphCreateVertex("Video", "Videos", new Video("503", "TestVideo503"), true);
+				for(int i=0;i<1000;i++){
+					Random r = new Random();
+					Map<String, Object> exampleVertexMap = new MapBuilder().put("id", (i/2+1)).get();
+				    String getVertexByID = "for i in GRAPH_VERTICES('Video',  {'id':'"+ Integer.toString(i/2+1) +"'},{vertexCollecitonRestriction:'Videos'}) return i._key";
+				    //Map<String, Object> bindVars = new MapBuilder().put("id", exampleVertexMap).get();
+				    CursorEntity<String> resVertexById = conn.executeQuery(getVertexByID, null, String.class, true, 1);
+				    Iterator<String> iteratorVertexById = resVertexById.iterator();
+				    String videoKey = null;
+				    if(iteratorVertexById.hasNext()) {
+				    	videoKey = (String) iteratorVertexById.next();
+				    }
+				    
+				    Map<String, Object> exampleAnnotationMap = new MapBuilder().put("id", (i/2+1)).get();
+				    String geteAnnotationID = "for i in GRAPH_VERTICES('Video', {'id':'"+ Integer.toString(i/2+1) +"'},{vertexCollecitonRestriction:'Annotations'}) return i._key";
+				    //Map<String, Object> bindVarseAnnotation = new MapBuilder().put("id", exampleAnnotationMap).get();
+				    CursorEntity<String> reseAnnotationById = conn.executeQuery(geteAnnotationID, null, String.class, true, 1);
+				    Iterator<String> iteratorAnnotationById = reseAnnotationById.iterator();
+				    String annKey = null;
+				    if(iteratorAnnotationById.hasNext()) {
+				    	annKey = (String) iteratorAnnotationById.next();
+				    }
+				    EdgeEntity<VideoEdge> edg1 = conn.graphCreateEdge("Video", "annotated", null, "Videos/"+videoKey, "Annotations/"+annKey, new VideoEdge((i/50 + r.nextDouble()),r.nextDouble()), true);
+				    EdgeEntity<VideoEdge> edg2 = conn.graphCreateEdge("Video", "annotated", null, "Videos/"+videoKey, "Annotations/"+annKey, new VideoEdge((i/50 + r.nextDouble()+1),r.nextDouble()), true);
+				}
+				
+				/*EdgeEntity<String> edg1 = conn.graphCreateEdge("Video", "annotated", null, id1.getDocumentHandle(), ann1.getDocumentHandle());
 				EdgeEntity<String> edg2 = conn.graphCreateEdge("Video", "annotated", null, id1.getDocumentHandle(), ann3.getDocumentHandle());
 				EdgeEntity<String> edg3 = conn.graphCreateEdge("Video", "annotated", null, id2.getDocumentHandle(), ann2.getDocumentHandle());
-				EdgeEntity<String> edg4 = conn.graphCreateEdge("Video", "annotated", null, id2.getDocumentHandle(), ann3.getDocumentHandle());
+				EdgeEntity<String> edg4 = conn.graphCreateEdge("Video", "annotated", null, id2.getDocumentHandle(), ann3.getDocumentHandle());*/
 				result = "Comleted Succesfully";
 				
 				// return 
@@ -524,20 +556,21 @@ public class AnnotationsClass extends Service {
 			selectquery = "for v in GRAPH_VERTICES ('Video', {}) return v";
 		    String query = "for i in GRAPH_EDGES('Video', null) return i";
 		    
-		    CursorEntity<PlainEdgeEntity> res = conn.executeQuery(query, null, PlainEdgeEntity.class, true, 100);
+		    CursorEntity<VideoEdge> res = conn.executeQuery(query, null, VideoEdge.class, true, 2000);
 		   
-		    Iterator<PlainEdgeEntity> iterator = res.iterator();
+		    Iterator<VideoEdge> iterator = res.iterator();
 		    while(iterator.hasNext()) {
 		    	ro = new JSONObject();
-		    	PlainEdgeEntity edge = (PlainEdgeEntity) iterator.next();
-		    	ro.put("Edge ", edge.getDocumentHandle());
-		    	ro.put("From ", edge.getFromCollection());
-		    	ro.put("To ", edge.getToCollection());
+		    	VideoEdge edge = (VideoEdge) iterator.next();
+		    	ro.put("Start Time ", edge.getStartTime());
+		    	ro.put("Duration ", edge.getDuration());
+		    	ro.put("From ", edge.getFrom());
+		    	ro.put("To ", edge.getTo());
 		    	qs.add(ro);
 		    }
 		    
 		    
-		    CursorEntity<Video> resVertex = conn.executeQuery(selectquery, null, Video.class, true, 100);
+		    CursorEntity<Video> resVertex = conn.executeQuery(selectquery, null, Video.class, true, 500);
 		    Iterator<Video> iteratorVertex = resVertex.iterator();
 		    while(iteratorVertex.hasNext()) {
 		    	ro = new JSONObject();
@@ -547,7 +580,7 @@ public class AnnotationsClass extends Service {
 		    	qs.add(ro);
 		    }
 		    
-		    Map<String, Object> exampleVertexMap = new MapBuilder().put("id", "1").get();
+		    Map<String, Object> exampleVertexMap = new MapBuilder().put("id", "20").get();
 		    String getVertexByID = "for i in GRAPH_VERTICES('Video', @id,{vertexCollecitonRestriction:'Videos'}) return i";
 		    Map<String, Object> bindVars = new MapBuilder().put("id", exampleVertexMap).get();
 		    CursorEntity<Video> resVertexById = conn.executeQuery(getVertexByID, bindVars, Video.class, true, 1);
@@ -566,7 +599,7 @@ public class AnnotationsClass extends Service {
 		    
 		    CursorEntity<Annotation> resAnnotation = conn.executeQuery(getAnnotations, bindVars2, Annotation.class, true, 100);
 		    
-		    qs.add("Vertices that have inbound edge with TestVideo 1");
+		    qs.add("Vertices that have inbound edge with TestVideo 20");
 		    Iterator<Annotation> iteratorAnnotation = resAnnotation.iterator();
 		    while(iteratorAnnotation.hasNext()) {
 		    	ro = new JSONObject();
