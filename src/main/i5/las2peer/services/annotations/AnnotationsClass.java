@@ -346,15 +346,15 @@ public class AnnotationsClass extends Service {
 				ann2 = conn.graphCreateVertex("Video", "Annotations", new Annotation("2", "Annotation2"), true);
 				ann3 = conn.graphCreateVertex("Video", "Annotations", new Annotation("3", "Annotation3"), true);*/
 				
-				for(int i=0;i<500;i++){
-					conn.graphCreateVertex("Video", "Videos", new Video(Integer.toString(i), "TestVideo" + Integer.toString(i) ), true);
-					//conn.graphCreateVertex("Video", "Annotations", new Annotation(Integer.toString(i+3), "Annotation"  + Integer.toString(i+3)), true);
+				for(int i = 500; i < 1000; i++) {
+					conn.graphCreateVertex("Video", "Videos", new Video(Integer.toString(i), 
+							"TestVideo" + Integer.toString(i) ), true);
 				}
 				conn = null;
 				conn= dbm.getConnection();
-				for(int i=0;i<500;i++){
-					//conn.graphCreateVertex("Video", "Videos", new Video(Integer.toString(i+2), "TestVideo" + Integer.toString(i+2) ), true);
-					ann3 = conn.graphCreateVertex("Video", "Annotations", new Annotation(Integer.toString(i), "Annotation"  + Integer.toString(i)), true);
+				for(int i = 500; i < 1000; i++) {
+					ann3 = conn.graphCreateVertex("Video", "Annotations", 
+							new Annotation(Integer.toString(i), "Annotation"  + Integer.toString(i)), true);
 				}
 				result = "Comleted Succesfully";
 
@@ -442,6 +442,7 @@ public class AnnotationsClass extends Service {
 		java.util.Date date= new java.util.Date();
 		ArrayList<String> videoID = new ArrayList<String>();
 		ArrayList<String> annotationID;
+		Random rand = new Random();
 		try {
 			JSONObject o;
 			conn= dbm.getConnection();
@@ -477,14 +478,27 @@ public class AnnotationsClass extends Service {
 			    conn = null;
 			    conn= dbm.getConnection();
 			    
-				for(int i = 0; i<400; i++) {
+			    
+				for(int i = 0; i < 400; i++) {
+					int rand_indexVideo = Math.abs(rand.nextInt() % 500);
+					int rand_indexAnnotation = Math.abs(rand.nextInt() % 500);
+					double rand_startTime = rand.nextDouble();
+					double rand_duration = rand.nextDouble();
+				EdgeEntity<?> edge1 = conn.graphCreateEdge(
+					      "Video",
+					      "newAnnotated",
+					      null,
+					      videoID.get(rand_indexVideo),
+					      annotationID.get(rand_indexAnnotation),
+					      new VideoEdge(rand_startTime, rand_duration),
+					      null);
 				EdgeEntity<?> edge2 = conn.graphCreateEdge(
 					      "Video",
 					      "newAnnotated",
 					      null,
-					      videoID.get(i),
-					      annotationID.get(i),
-					      new VideoEdge(1, 3),
+					      videoID.get(rand_indexVideo),
+					      annotationID.get(rand_indexAnnotation),
+					      new VideoEdge(rand_startTime, rand_duration),
 					      null);
 				}
 				
@@ -621,6 +635,8 @@ public class AnnotationsClass extends Service {
 		    while(iterator.hasNext()) {
 		    	ro = new JSONObject();
 		    	VideoEdge edge = (VideoEdge) iterator.next();
+		    	ro.put("From: ", edge.getFromCollection());
+		    	ro.put("To: ", edge.getToCollection());
 		    	ro.put("Start Time ", edge.getStartTime());
 		    	ro.put("Duration ", edge.getDuration());
 		    	qs.add(ro);
