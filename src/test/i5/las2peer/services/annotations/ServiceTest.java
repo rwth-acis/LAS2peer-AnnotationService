@@ -152,4 +152,92 @@ public class ServiceTest {
 		AnnotationsClass cl = new AnnotationsClass();
 		assertTrue(cl.debugMapping());
 	}
+	
+
+	/**
+	 * Tests the AnnotationService for adding new nodes (for Videos)
+	 */
+	@Test
+	public void testCreateVideoNode()
+	{
+		AnnotationsClass cl = new AnnotationsClass();
+		//create db connection
+		
+		//add a new video
+		
+		//retrieve the video information
+		
+		//check if video exists -> should pass
+		
+		//add same video -> should fail with corresponding message
+		
+		//delete video
+		
+		//check if video exists -> should fail
+		
+		//close db connection
+	}
+	
+	/**
+	 * Tests the AnnotationService for adding new nodes (as Annotation)
+	 */
+	@Test
+	public void testCreateAnnotationNode()
+	{
+		AnnotationsClass cl = new AnnotationsClass();
+		
+		//create db connection
+		
+		//add a new annotation --> what happens if the annotation is not linked to any video?
+		
+		//retrieve the annotation 
+		
+		//check if annotation exists -> should pass
+		
+		//add same annotation -> should fail with corresponding message
+		
+		//delete annotation
+		
+		//check if annotation exists -> should fail
+		
+		//close db connection
+	}
+	
+	
+	
+	/**
+	 *  Tests adding an annotation to a video (by creating the corresponding edge)
+	 */
+	@Test
+	public void testAddAnnotationToVideo()
+	{
+		AnnotationsClass cl = new AnnotationsClass();
+		// create db connection
+		
+		// add a new video
+		
+		//check if video exists
+		
+		//create a new annotation for the video
+		
+		//check if annotation exists
+		
+		//check if the edge exists
+		
+		//retrieve edge data
+		
+		//create a new edge (with the same information)
+		
+		//retrieve the existing edges & data 
+		
+		//delete all edges 
+		
+		//check if any edge still exists
+		
+		//delete annotation and video
+		
+		//close db connection
+		
+	}
+	
 }
