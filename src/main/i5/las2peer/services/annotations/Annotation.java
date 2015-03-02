@@ -1,12 +1,15 @@
 package i5.las2peer.services.annotations;
 
-public class Annotation {
+import net.minidev.json.JSONObject;
+
+public class Annotation{
 	String id;
+	JSONObject annotationData;
 	String title;
 
-	public Annotation(String id, String title) {
+	public Annotation(String id, JSONObject annotationData) {
 		this.id = id;
-		this.title = title;
+		this.annotationData = annotationData;
 	}
 
 	public String getId() {
@@ -23,6 +26,14 @@ public class Annotation {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+	
+	public JSONObject getAnnotationData() {
+		return annotationData;
+	}
+
+	public void setAnnotationData(JSONObject annotationData) {
+		this.annotationData = annotationData;
 	}
 
 }

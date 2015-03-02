@@ -128,6 +128,7 @@ public class AnnotationsClass extends Service {
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Video details"),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 404, message = "Video id does not exist"),
 			@ApiResponse(code = 500, message = "Internal error"), })
 	public HttpResponse getDatabaseDetails() {
@@ -198,6 +199,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON format {\"graphName\": \"Video\", \"collection\": \"Videos\", \"collection\": \"Annotations\", \"from\":\"Videos\", \"to\": \"Annotations\", \"edgeCollection\": \"newAnnotated\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Graph saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Graph already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -236,7 +238,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeCollectionName.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}
 				// ... and the vertex collection(s) where an edge starts...
@@ -253,7 +255,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeFrom.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}
 				if(from.isEmpty()){
@@ -261,7 +263,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeFrom.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}
 				edgeDefHasAnnotated.setFrom(from);
@@ -280,7 +282,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeTo.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}
 				if(to.isEmpty()){
@@ -288,7 +290,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeTo.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}
 				edgeDefHasAnnotated.setTo(to);
@@ -311,7 +313,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ vertexCollection.toString() + "\"");
-					er.setStatus(500);
+					er.setStatus(400);
 					return er;
 				}				
 				//orphanCollections.add("Videos");
@@ -527,6 +529,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON format {\"graphName\": \"Video\", \"collection\": \"Videos\", \"id\": \"1\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Vertex already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -548,76 +551,57 @@ public class AnnotationsClass extends Service {
 					.getId()) {
 				
 				conn = dbm.getConnection();
-				String title = "";
 				String id = "";
 				String graphName = "";
 				String graphCollection = "";
 
 				Object idObj = new String("id");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					id = (String) o.get(idObj);
-					
-					// }
-				} catch (Exception e) {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ idObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}
 				Object graphNameObj = new String("graphName");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					graphName = (String) o.get(graphNameObj);
-					
-					// }
-				} catch (Exception e) {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ graphNameObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}
 				Object graphCollectionObj = new String("collection");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					graphCollection = (String) o.get(graphCollectionObj);
+				
+				id = getKeyFromJSON(idObj, o, false);
+				graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
+				
+				if (!id.equals("") && !graphName.equals("") && !graphCollection.equals("")) {
+					if ( getVertexHandle(id , graphCollection, graphName).equals("")){
 					
-					// }
-				} catch (Exception e) {
+						DocumentEntity<JSONObject> newVideo = conn.graphCreateVertex(graphName, graphCollection, o, true);
+						
+						if(newVideo.getCode() == SUCCESSFUL_INSERT && !newVideo.isError()){
+							result = "Comleted Succesfully";
+							// return
+							HttpResponse r = new HttpResponse(result);
+							r.setStatus(200);
+							return r;
+						}else{
+							// return HTTP Response on error
+							String response = newVideo.getErrorNumber() + ", " + newVideo.getErrorMessage();
+							HttpResponse er = new HttpResponse("Internal error: Cannot add vertex. " + response +".");
+							er.setStatus(500);
+							return er;
+						}
+					}else{
+						// return HTTP Response on vertex exists
+						result = "Vertex already exists!";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(409);
+						return r;
+					}					
+				}else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
-							+ graphCollectionObj.toString() + "\"");
-					er.setStatus(500);
+							+ idObj.toString() + "\" and/or "
+							+ "\"" + graphNameObj.toString() + "\" and/or "
+							+ "\"" + graphCollectionObj.toString() + "\""
+							+ "");
+					er.setStatus(400);
 					return er;
-				}
-				
-				DocumentEntity<Video> newVideo = conn.graphCreateVertex(graphName, graphCollection, new Video(id, title), true);
-				
-				if(newVideo.getCode() == SUCCESSFUL){
-					result = "Comleted Succesfully";
-					// return
-					HttpResponse r = new HttpResponse(result);
-					r.setStatus(200);
-					return r;
-					
-				}else{
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: Cannot add vertex");
-					er.setStatus(500);
-					return er;
-				}
-				
+				}															
 			} else {
 				result = "User in not authenticated";
-
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(401);
@@ -687,6 +671,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON format \"graphName\": \"Video\", \"collection\": \"Annotations\", \"id\": \"1\", ...Additional data ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotation saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Annotation already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -711,83 +696,50 @@ public class AnnotationsClass extends Service {
 				String graphName = "";
 				String graphCollection = "";
 				String id = "";
-				/*Object titleObj = new String("title");
-				try {
 
-					// if(o.containsKey(edgeCollectionName)){
-					title = (String) o.get(titleObj);
-					
-					// }
-				} catch (Exception e) {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ titleObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}*/
 				Object idObj = new String("id");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					id = (String) o.get(idObj);
-					o.remove(idObj);
-					
-					// }
-				} catch (Exception e) {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ idObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}
 				Object graphNameObj = new String("graphName");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					graphName = (String) o.get(graphNameObj);
-					o.remove(graphNameObj);
-					
-					// }
-				} catch (Exception e) {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ graphNameObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}
 				Object graphCollectionObj = new String("collection");
-				try {
-
-					// if(o.containsKey(edgeCollectionName)){
-					graphCollection = (String) o.get(graphCollectionObj);
-					o.remove(graphCollectionObj);
-					
-					// }
-				} catch (Exception e) {
+				
+				id = getKeyFromJSON(idObj, o, false);
+				graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
+				
+				if (!id.equals("") && !graphName.equals("") && !graphCollection.equals("")) {
+					if ( getVertexHandle(id , graphCollection, graphName).equals("")){
+				
+						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o), true);
+				
+						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
+							result = "Comleted Succesfully";
+							// return
+							HttpResponse r = new HttpResponse(result);
+							r.setStatus(200);
+							return r;
+						}else{
+							// return HTTP Response on error
+							String response = newAnnotation.getErrorNumber() + ", " + newAnnotation.getErrorMessage();
+							HttpResponse er = new HttpResponse("Internal error: Cannot add vertex. " + response +".");
+							er.setStatus(500);
+							return er;
+						}
+					}else{
+						// return HTTP Response on vertex exists
+						result = "Vertex already exists!";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(409);
+						return r;
+					}					
+				}else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
-							+ graphCollectionObj.toString() + "\"");
-					er.setStatus(500);
-					return er;
-				}
-				
-				DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o), true);
-				
-				if(newAnnotation.getCode() == SUCCESSFUL_INSERT){
-					result = "Comleted Succesfully";
-					// return
-					HttpResponse r = new HttpResponse(result);
-					r.setStatus(200);
-					return r;
-					
-				}else{
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: Cannot add annotation. Error Code " + newAnnotation.getCode() + ".");
-					er.setStatus(500);
+							+ idObj.toString() + "\" and/or "
+							+ "\"" + graphNameObj.toString() + "\" and/or "
+							+ "\"" + graphCollectionObj.toString() + "\""
+							+ "");
+					er.setStatus(400);
 					return er;
 				}
 				
@@ -864,6 +816,7 @@ public class AnnotationsClass extends Service {
 			+ "\"startTime\": \"1.324\", \"duration\": \"0.40\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Edge saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Edge already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -889,12 +842,14 @@ public class AnnotationsClass extends Service {
 				String destCollection = "";
 				String sourceHandle = "";
 				String destHandle = "";
+				String id = "";
 				
 				Object graphNameObj = new String("graphName");
 				Object edgeCollectionObj = new String("collection");
 				Object edgeSourceObj = new String("source");
 				Object edgeDestObj = new String("dest");
 				Object destCollectionObj = new String("destCollection");
+				Object idObj = new String("id");
 				
 				//get the graph name from the Json 
 				graphName = getKeyFromJSON(graphNameObj, o, true);
@@ -903,6 +858,7 @@ public class AnnotationsClass extends Service {
 				sourceId = getKeyFromJSON(edgeSourceObj, o, true);
 				destId = getKeyFromJSON(edgeDestObj, o, true);
 				destCollection = getKeyFromJSON(destCollectionObj, o, true);
+				id = getKeyFromJSON(idObj, o, false);
 				
 				if ( !graphName.equals("") && !edgeCollection.equals("") && !sourceId.equals("") && !destId.equals("") && !destCollection.equals("") ){
 					//get source handle
@@ -918,24 +874,43 @@ public class AnnotationsClass extends Service {
 					destHandle = getVertexHandle(destId, destCollection, graphName);
 					
 				}else{ //not correct json
-					
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key \""
+							+ graphNameObj.toString() + "\" and/or "
+							+ "\"" + edgeCollectionObj.toString() + "\" and/or "
+							+ "\"" + edgeSourceObj.toString() + "\" and/or "
+							+ "\"" + edgeDestObj.toString() + "\" and/or "
+							+ "\"" + destCollectionObj.toString() + "\""
+							+ "");
+					er.setStatus(400);
+					return er;
 				}
 				
 				//insert the new edge
+				if (!getEdgeHandle(id, edgeCollection, graphName).equals("")){
 				EdgeEntity<?> edge = conn.graphCreateEdge(graphName, edgeCollection, null, sourceHandle, destHandle, o, null);
 				
-				if (edge.getCode() == SUCCESSFUL_INSERT_EDGE){
-					result = "Comleted Succesfully";
+					if (edge.getCode() == SUCCESSFUL_INSERT_EDGE){
+						result = "Comleted Succesfully";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(200);
+						return r;
+						
+					}else{
+						// return HTTP Response on error
+						HttpResponse er = new HttpResponse("Internal error: Cannot add edge. Error Code " + edge.getCode() + ".");
+						er.setStatus(500);
+						return er;
+					}
+				}else{
+					// return HTTP Response on edge exists
+					result = "Edge already exists!";
 					// return
 					HttpResponse r = new HttpResponse(result);
-					r.setStatus(200);
+					r.setStatus(409);
 					return r;
-					
-				}else{
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: Cannot add edge. Error Code " + edge.getCode() + ".");
-					er.setStatus(500);
-					return er;
 				}
 				
 			} else {
@@ -1168,6 +1143,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON: { \"graphName\": \"Video\", \"collection\": \"Videos\", \"title\": \"Updated Title :)\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex details updated successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -1209,6 +1185,24 @@ public class AnnotationsClass extends Service {
 				if ( !vertexId.equals("") && ! graphName.equals("")){
 					vertexFromDB = getVertexJSON(vertexId, vertexCollection, graphName);
 					vertexHandle = getKeyFromJSON(new String(HANDLE), vertexFromDB, false);
+				} else {
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key \""
+							+ graphName.toString() + "\" and/or "
+							+ "\"" + vertexCollectionObj.toString() + "\""
+							+ "");
+					er.setStatus(400);
+					return er;
+				}
+				
+				if (!vertexHandle.equals("")){
+					// return HTTP Response on vertex not found
+					result = "Vertex is not found!";
+					// return
+					HttpResponse r = new HttpResponse(result);
+					r.setStatus(404);
+					return r;
 				}
 				
 				//update the JSON according the new input data
@@ -1235,7 +1229,7 @@ public class AnnotationsClass extends Service {
 					return r;
 				} else {
 					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: Cannot update vertex. Error Code " + updatedVertex.getCode() + ".");
+					HttpResponse er = new HttpResponse("Internal error: Cannot update vertex. Error Code " + updatedVertex.getCode() + ", " + updatedVertex.getErrorMessage() + ".");
 					er.setStatus(500);
 					return er;
 				}
@@ -1287,6 +1281,7 @@ public class AnnotationsClass extends Service {
 			+ "\"duration\": \"0.40\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex details updated successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -1327,6 +1322,24 @@ public class AnnotationsClass extends Service {
 				if ( !edgeId.equals("") && ! graphName.equals("")){					
 					edgeFromDB = getEdgeJSON(edgeId, edgeCollection, graphName);
 					edgeHandle = getKeyFromJSON(new String(HANDLE), edgeFromDB, false);
+				} else {
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key \""
+							+ graphName.toString() + "\" and/or "
+							+ "\"" + edgeCollection.toString() + "\""
+							+ "");
+					er.setStatus(400);
+					return er;
+				}
+				
+				if (!edgeHandle.equals("")){
+					// return HTTP Response on edge not found
+					result = "Edge is not found!";
+					// return
+					HttpResponse r = new HttpResponse(result);
+					r.setStatus(404);
+					return r;
 				}
 								
 				for (Object key: o.keySet()){
@@ -1403,6 +1416,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON: { \"graphName\": \"Video\", \"collection\": \"Videos\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex deleted successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -1441,11 +1455,32 @@ public class AnnotationsClass extends Service {
 				
 				if ( !vertexId.equals("") && ! graphName.equals("")){
 					vertexHandle = getVertexHandle(vertexId, vertexCollection, graphName);
+				} else {
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key \""
+							+ graphName.toString() + "\" and/or "
+							+ "\"" + vertexCollection.toString() + "\""
+							+ "");
+					er.setStatus(400);
+					return er;
+				}
+				
+				if (!vertexHandle.equals("")){
+					// return HTTP Response on Vertex not found
+					result = "Vertex is not found!";
+					// return
+					HttpResponse r = new HttpResponse(result);
+					r.setStatus(404);
+					return r;
 				}
 				String [] vertexHandleSplit = vertexHandle.split("/"); 
 				vertexKeyDb = vertexHandleSplit[1];
 				
+				
+				
 				DeletedEntity deletedVertex = conn.graphDeleteVertex(graphName, vertexCollection, vertexKeyDb);
+				
 				if ( deletedVertex.getCode() == SUCCESSFUL_INSERT_EDGE && deletedVertex.getDeleted() == true){
 				
 					result = "Database updated.";
@@ -1506,6 +1541,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON: { \"graphName\": \"Video\", \"collection\": \"newAnnotated\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex details updated successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Edge not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -1543,9 +1579,25 @@ public class AnnotationsClass extends Service {
 				
 				if ( !edgeId.equals("") && ! graphName.equals("")){
 					edgeHandle = getEdgeHandle(edgeId, edgeCollection, graphName);
-				} //else {
-					
-				//}
+				} else {
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key \""
+							+ graphName.toString() + "\" and/or "
+							+ "\"" + edgeCollection.toString() + "\""
+							+ "");
+					er.setStatus(400);
+					return er;
+				}
+				
+				if (!edgeHandle.equals("")){
+					// return HTTP Response on edge not found
+					result = "Edge is not found!";
+					// return
+					HttpResponse r = new HttpResponse(result);
+					r.setStatus(404);
+					return r;
+				}
 				String [] edgeHandleSplit = edgeHandle.split("/"); 
 				edgeKeyDb = edgeHandleSplit[1];
 				
@@ -1605,6 +1657,7 @@ public class AnnotationsClass extends Service {
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Vertex annotations"),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 404, message = "Vertex id does not exist"),
 			@ApiResponse(code = 500, message = "Internal error"), })
 	public HttpResponse getVertexAnnotations(@PathParam("vertexId") String vertexId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
@@ -1622,8 +1675,7 @@ public class AnnotationsClass extends Service {
 			Object graphNameObj = new String("graphName");
 			Object vertexCollectionObj = new String("collection");
 			//Object vertexIdObj = new String("id");
-			
-			
+					
 			//get the graph name from the Json 
 			graphName = name;
 			//get the vertex collection name from the Json 
@@ -1633,11 +1685,33 @@ public class AnnotationsClass extends Service {
 			String[] partsOfObject = part.split(",");
 			
 			conn = dbm.getConnection();
-			
+
 			vertexFromDB = getVertexJSON(vertexId, vertexCollection, graphName);
 			vertexHandle = getKeyFromJSON(new String(HANDLE), vertexFromDB, false);
 			
-									
+			if ( !vertexId.equals("") && ! graphName.equals("")){
+				vertexFromDB = getVertexJSON(vertexId, vertexCollection, graphName);
+				vertexHandle = getKeyFromJSON(new String(HANDLE), vertexFromDB, false);
+			} else {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Internal error: "
+						+ "Missing JSON object member with key \""
+						+ graphName.toString() + "\" and/or "
+						+ "\"" + vertexCollection.toString() + "\""
+						+ "");
+				er.setStatus(400);
+				return er;
+			}
+			
+			if (!vertexHandle.equals("")){
+				// return HTTP Response on Vertex not found
+				String result = "Vertex is not found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
+			}
+			
 			String getAnnotations = "";
 			if (partsOfObject[0].equals("*")){
 				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedVertex, {endVertexCollectionRestriction : 'Annotations'}) return i";
