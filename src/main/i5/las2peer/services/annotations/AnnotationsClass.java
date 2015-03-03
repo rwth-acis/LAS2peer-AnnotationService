@@ -50,6 +50,8 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.JSONValue;
 import net.minidev.json.parser.ParseException;
 
+import com.google.gson.Gson;
+
 /**
  * LAS2peer Service
  * 
@@ -701,7 +703,7 @@ public class AnnotationsClass extends Service {
 				Object graphNameObj = new String("graphName");
 				Object graphCollectionObj = new String("collection");
 				
-				id = getKeyFromJSON(idObj, o, false);
+				id = getKeyFromJSON(idObj, o, true);
 				graphName = getKeyFromJSON(graphNameObj, o, true);
 				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
 				
@@ -888,8 +890,9 @@ public class AnnotationsClass extends Service {
 				}
 				
 				//insert the new edge
-				if (!getEdgeHandle(id, edgeCollection, graphName).equals("")){
-				EdgeEntity<?> edge = conn.graphCreateEdge(graphName, edgeCollection, null, sourceHandle, destHandle, o, null);
+				if (getEdgeHandle(id, edgeCollection, graphName).equals("")){
+					
+					EdgeEntity<?> edge = conn.graphCreateEdge(graphName, edgeCollection, null, sourceHandle, destHandle, o, null);
 				
 					if (edge.getCode() == SUCCESSFUL_INSERT_EDGE){
 						result = "Comleted Succesfully";
@@ -1650,6 +1653,14 @@ public class AnnotationsClass extends Service {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param vertexId id of the source
+	 * @param part part of the requested output
+	 * @param name graph name
+	 * @param collection 
+	 * @return JSONArray of vertexId-neighbors together with edge information
+	 */
 	@GET
 	@Path("annotations/{vertexId}")
 	@ResourceListApi(description = "Return details for a selected graph")
@@ -1661,9 +1672,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 404, message = "Vertex id does not exist"),
 			@ApiResponse(code = 500, message = "Internal error"), })
 	public HttpResponse getVertexAnnotations(@PathParam("vertexId") String vertexId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
-		String selectquery = "";
 		ArangoDriver conn = null;
-		JSONObject ro = null;
 		JSONArray qs = new JSONArray();
 		try {
 			String vertexHandle = "";
@@ -1672,8 +1681,6 @@ public class AnnotationsClass extends Service {
 			
 			JSONObject vertexFromDB = null;
 			
-			Object graphNameObj = new String("graphName");
-			Object vertexCollectionObj = new String("collection");
 			//Object vertexIdObj = new String("id");
 					
 			//get the graph name from the Json 
@@ -1703,7 +1710,7 @@ public class AnnotationsClass extends Service {
 				return er;
 			}
 			
-			if (!vertexHandle.equals("")){
+			if (vertexHandle.equals("")){
 				// return HTTP Response on Vertex not found
 				String result = "Vertex is not found!";
 				// return
@@ -1731,16 +1738,19 @@ public class AnnotationsClass extends Service {
 
 			CursorEntity<JSONObject> resAnnotation = conn.executeQuery(getAnnotations, bindVars, JSONObject.class, true, 100);
 
-			qs.add("Vertices that have edge with " + vertexId );
+			//qs.add("Vertices that have edge with " + vertexId );
 			Iterator<JSONObject> iteratorAnnotation = resAnnotation.iterator();
 			while (iteratorAnnotation.hasNext()) {
-				JSONObject annotation = (JSONObject) iteratorAnnotation.next();				
+				JSONObject annotation = (JSONObject) iteratorAnnotation.next();
 				qs.add(annotation);
 			}
+			JSONArray modification = modifyJSON(qs);
+			
+			modification.add(0, new String("Vertices that have edge with " + vertexId ));
 			// prepare statement
 
-			// return HTTP Response on success
-			HttpResponse r = new HttpResponse(qs.toJSONString());
+			// return HTTP Response on successL
+			HttpResponse r = new HttpResponse(modification.toJSONString());
 			r.setStatus(200);
 			return r;
 
@@ -1768,6 +1778,278 @@ public class AnnotationsClass extends Service {
 
 	}
 	
+	/**
+	 * 
+	 * @param vertexId id of requested vertex
+	 * @param part requested part of the results
+	 * @param name graph name
+	 * @param collection collection where the vertex is located
+	 * @return
+	 */
+	@GET
+	@Path("vertices/{vertexId}")
+	@ResourceListApi(description = "Return details for a selected vertex")
+	@Summary("return a JSON with vertex details stored in the given graph Name")
+	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Vertex annotations"),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 404, message = "Vertex id does not exist"),
+			@ApiResponse(code = 500, message = "Internal error"), })
+	public HttpResponse getVertex(@PathParam("vertexId") String vertexId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
+		ArangoDriver conn = null;
+		try {
+			String graphName = "";
+			String vertexCollection = "";
+			
+			JSONObject vertexFromDB = null;
+			
+			//Object vertexIdObj = new String("id");
+					
+			//get the graph name from the Json 
+			graphName = name;
+			//get the vertex collection name from the Json 
+			vertexCollection = collection;
+			
+			conn = dbm.getConnection();
+
+			
+			if ( !vertexId.equals("") && ! graphName.equals("")){
+				vertexFromDB = getVertexJSON(vertexId, vertexCollection, graphName, part);
+				//vertexHandle = getKeyFromJSON(new String(HANDLE), vertexFromDB, false);
+			} else {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Internal error: "
+						+ "Missing JSON object member with key \""
+						+ graphName.toString() + "\" and/or "
+						+ "\"" + vertexCollection.toString() + "\""
+						+ "");
+				er.setStatus(400);
+				return er;
+			}
+			
+			if (vertexFromDB == null){
+				// return HTTP Response on Vertex not found
+				String result = "Vertex is not found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
+			} else {
+				// return HTTP Response on successL
+				HttpResponse r = new HttpResponse(vertexFromDB.toJSONString());
+				r.setStatus(200);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
+	
+	/**
+	 * 
+	 * @param part parts needed of output
+	 * @param name graph name
+	 * @param collection collection where to find vertices
+	 * @return
+	 */
+	
+	@GET
+	@Path("vertices")
+	@ResourceListApi(description = "Return details for a selected vertex")
+	@Summary("return a JSON with vertex details stored in the given graph Name")
+	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Vertex annotations"),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 404, message = "Vertex id does not exist"),
+			@ApiResponse(code = 500, message = "Internal error"), })
+	public HttpResponse getVertices(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
+		ArangoDriver conn = null;
+		try {
+			String graphName = "";
+			String vertexCollection = "";
+			
+			JSONArray verticesFromDB = null;
+			
+			//Object vertexIdObj = new String("id");
+					
+			//get the graph name from the Json 
+			graphName = name;
+			//get the vertex collection name from the Json 
+			vertexCollection = collection;
+			
+			conn = dbm.getConnection();
+
+			
+			if ( ! graphName.equals("")){
+				verticesFromDB = getVerticesJSON (vertexCollection, graphName, part);
+			} else {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Internal error: "
+						+ "Missing JSON object member with key \""
+						+ graphName.toString() + "\" and/or "
+						+ "\"" + vertexCollection.toString() + "\""
+						+ "");
+				er.setStatus(400);
+				return er;
+			}
+			
+			if (verticesFromDB.isEmpty()){
+				// return HTTP Response on Vertex not found
+				String result = "No vertices found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
+			} else {
+				// return HTTP Response on successL
+				HttpResponse r = new HttpResponse(verticesFromDB.toJSONString());
+				r.setStatus(200);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
+	
+	/**
+	 * Get edges that connect two vertices
+	 * @param sourceId 
+	 * @param destId
+	 * @param part select only parts of attributes
+	 * @param name graphname
+	 * @param collection 
+	 * @return JSONArray with edges
+	 */
+	@GET
+	@Path("edges/{sourceId}/{destId}")
+	@ResourceListApi(description = "Return details for a selected vertex")
+	@Summary("return a JSON with vertex details stored in the given graph Name")
+	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Vertex annotations"),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 404, message = "Vertex id does not exist"),
+			@ApiResponse(code = 500, message = "Internal error"), })
+	public HttpResponse getEdges(@PathParam("sourceId") String sourceId, @PathParam("destId") String destId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "newAnnotated" ) String collection) {
+		ArangoDriver conn = null;
+		try {
+			String graphName = "";
+			String edgeCollection = "";
+			String sourceHandle = "";
+			String destHandle = "";
+			JSONArray edgesFromDB = null;
+			
+			//Object vertexIdObj = new String("id");
+					
+			//get the graph name from the Json 
+			graphName = name;
+			//get the vertex collection name from the Json 
+			edgeCollection = collection;
+			
+			conn = dbm.getConnection();
+			
+			sourceHandle = getVertexHandle(sourceId, "", graphName);
+			destHandle = getVertexHandle(destId, "Annotations", graphName);
+			if (sourceHandle.equals("")||destHandle.equals("")){
+				String result = "Vertices not found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
+			}
+			
+			if ( !graphName.equals("")){
+				edgesFromDB = getEdgesJSON(edgeCollection, graphName, sourceHandle, destHandle, part);
+				//vertexHandle = getKeyFromJSON(new String(HANDLE), vertexFromDB, false);
+			} else {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Internal error: "
+						+ "Missing object member with key \""
+						+ graphName.toString() + "\" and/or "
+						+ "");
+				er.setStatus(400);
+				return er;
+			}
+			
+			if (edgesFromDB.isEmpty()){
+				// return HTTP Response on Vertex not found
+				String result = "No Edges found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
+			} else {
+				// return HTTP Response on successL
+				HttpResponse r = new HttpResponse(edgesFromDB.toJSONString());
+				r.setStatus(200);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
 	/*@GET
 	@Path("graph")
 	@ResourceListApi(description = "Return details for a selected graph")
@@ -1899,6 +2181,15 @@ public class AnnotationsClass extends Service {
 		return value;
 	}
 	
+	/**
+	 * Get information about one vertex (specified id)
+	 * 
+	 * @param vertexId id of the requested vertex
+	 * @param vertexCollection collection where this vertex belongs
+	 * @param graphName graph name
+	 * @return vertexHandle - for the requested vertex
+	 */
+	
 	private String getVertexHandle( String vertexId, String vertexCollection, String graphName ){
 		ArangoDriver conn = null;
 		String getSourceVertexByID = "";
@@ -1936,6 +2227,14 @@ public class AnnotationsClass extends Service {
 		return vertexHandle;
 	}
 	
+	/**
+	 * Get information about one vertex (specified id)
+	 * 
+	 * @param vertexId id of the requested vertex
+	 * @param vertexCollection collection where this vertex belongs
+	 * @param graphName graph name
+	 * @return data for the vertex in JSON format
+	 */
 	private JSONObject getVertexJSON( String vertexId, String vertexCollection, String graphName ){
 		ArangoDriver conn = null;
 		String getSourceVertexByID = "";
@@ -1973,7 +2272,139 @@ public class AnnotationsClass extends Service {
 		return vertex;
 	}
 	
+	/**
+	 * Get parts of information about one vertex (specified id) 
+	 * 
+	 * @param vertexId id of the requested vertex
+	 * @param vertexCollection collection where this vertex belongs
+	 * @param graphName graph name
+	 * @return data for the vertex in JSON format
+	 */
+	private JSONObject getVertexJSON( String vertexId, String vertexCollection, String graphName, String part ){
+		ArangoDriver conn = null;
+		String getSourceVertexByID = "";
+		String returnStatement = " return i";
+		JSONObject vertex = null;
+		
+		try {
+			conn = dbm.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//get vertex handle
+		//Map<String, Object> soruceVertexMap = new MapBuilder().put("id",vertexId).get();
+		
+		//return modification
+		String selectParts = "";
+		if ( part.equals("*") ||  part.equals("")){
+			returnStatement = " return i";
+		} else {
+			String[] partsOfObject = part.split(",");
+			selectParts = "{";
+			for(String p:partsOfObject )
+			{
+				String partSmall = "'" + p + "': i." + p + ",";
+				selectParts += partSmall;
+			}
+			//replace last character from ',' to '}'
+			selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+			returnStatement = " return " + selectParts;
+		}
+		
+		if ( vertexCollection.equals("")){
+			getSourceVertexByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{}) FILTER i.id == '"+ vertexId + "' " + returnStatement;
+		} else {
+			getSourceVertexByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{vertexCollectionRestriction : '"+ vertexCollection +"'}) FILTER i.id == '"+ vertexId + "' " + returnStatement;
+		}
+		
+		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceVertexMap).get();
+		CursorEntity<JSONObject> resSourceById = null;
+		try {
+			resSourceById = conn.executeQuery(	getSourceVertexByID, null, JSONObject.class, true, 1);
+		} catch (ArangoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		if (iteratorSource.hasNext()){
+			vertex = iteratorSource.next();
+		}
+		return vertex;
+	}
 	
+	
+	/**
+	 * Get parts of information about vertices
+	 * 
+	 * @param vertexCollection collection where this vertex belongs
+	 * @param graphName graph name
+	 * @return data for the vertex in JSON format
+	 */
+	private JSONArray getVerticesJSON( String vertexCollection, String graphName, String part ){
+		ArangoDriver conn = null;
+		String getSourceVertexByID = "";
+		String returnStatement = " return i";
+		JSONArray verticesJSON = new JSONArray();
+		JSONObject vertex = null;
+		
+		try {
+			conn = dbm.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//get vertex handle
+		//Map<String, Object> soruceVertexMap = new MapBuilder().put("id",vertexId).get();
+		
+		//return modification
+		String selectParts = "";
+		if ( part.equals("*") ||  part.equals("")){
+			returnStatement = " return i";
+		} else {
+			String[] partsOfObject = part.split(",");
+			selectParts = "{";
+			for(String p:partsOfObject )
+			{
+				String partSmall = "'" + p + "': i." + p + ",";
+				selectParts += partSmall;
+			}
+			//replace last character from ',' to '}'
+			selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+			returnStatement = " return " + selectParts;
+		}
+		
+		if ( vertexCollection.equals("")){
+			getSourceVertexByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{}) " + returnStatement;
+		} else {
+			getSourceVertexByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{vertexCollectionRestriction : '"+ vertexCollection +"'})  " + returnStatement;
+		}
+		
+		CursorEntity<JSONObject> resSourceById = null;
+		try {
+			resSourceById = conn.executeQuery(	getSourceVertexByID, null, JSONObject.class, true, 1);
+		} catch (ArangoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		while (iteratorSource.hasNext()){
+			vertex = iteratorSource.next();
+			verticesJSON.add(vertex);
+		}
+		return verticesJSON;
+	}
+	/**
+	 * Get information about one edge (specified id)
+	 * 
+	 * @param edgeId id of the requested edge
+	 * @param edgeCollection collection where this edge belongs
+	 * @param graphName  graph name
+	 * @return handle for the requested edge
+	 */
+
 	private String getEdgeHandle( String edgeId, String edgeCollection, String graphName ){
 		ArangoDriver conn = null;
 		String getSourceEdgeByID = "";
@@ -2008,6 +2439,14 @@ public class AnnotationsClass extends Service {
 		return edgeHandle;
 	}
 	
+	/**
+	 * Get information about one edge (specified id)
+	 * 
+	 * @param edgeId id of the requested edge
+	 * @param edgeCollection collection where this edge belongs
+	 * @param graphName  graph name
+	 * @return data for the specified edge in JSON format
+	 */
 	private JSONObject getEdgeJSON( String edgeId, String edgeCollection, String graphName ){
 		ArangoDriver conn = null;
 		String getSourceEdgeByID = "";
@@ -2041,7 +2480,140 @@ public class AnnotationsClass extends Service {
 		}
 		return edge;
 	}
+	
+	private JSONArray getEdgesJSON(String edgeCollection, String graphName, String sourceHandle, String destHandle, String part ){
+		ArangoDriver conn = null;
+		String getSourceEdgeByID = "";
+		String returnStatement = " return i";
+		JSONArray edges = new JSONArray();
+		JSONObject edge = null;
 		
+		try {
+			conn = dbm.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//return modification
+		String selectParts = "";
+		if ( part.equals("*") ||  part.equals("")){
+			returnStatement = " return i";
+		} else {
+			String[] partsOfObject = part.split(",");
+			selectParts = "{";
+			for(String p:partsOfObject )
+			{
+				String partSmall = "'" + p + "': i." + p + ",";
+				selectParts += partSmall;
+			}
+			//replace last character from ',' to '}'
+			selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+			returnStatement = " return " + selectParts;
+		}
+				
+		//Map<String, Object> soruceEdgeMap = new MapBuilder().put("id",edgeId).get();		
+		if ( edgeCollection.equals("")){
+			getSourceEdgeByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
+		} else {
+			getSourceEdgeByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ edgeCollection +"'}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
+		}
+		
+		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceEdgeMap).get();
+		CursorEntity<JSONObject> resSourceById = null;
+		try {
+			resSourceById = conn.executeQuery(	getSourceEdgeByID, null, JSONObject.class, true, 1);
+		} catch (ArangoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		while (iteratorSource.hasNext()){
+			edge = iteratorSource.next();
+			edges.add(edge);
+		}
+		return edges;
+	}
+		
+	/**
+	 * Modify JSONArray returned from ArangoDB. It contains information about all the
+	 * annotations related to one vertex, and the edges' information regarding each annotation
+	 * @param array JSONArray returned from ArangoDB. 
+	 * @return modified JSONArray in a format { {edge, vertex}, {edge, vertex}, ...}
+	 */
+	private JSONArray modifyJSON(JSONArray array){
+		JSONArray modifiy = new JSONArray();
+		
+		String vertexObject = new String("vertex");
+		String edgesObject = new String("edges");
+		String pathObject = new String("path");
+		
+		for (int i = 0; i < array.size(); i++){
+			JSONObject o = (JSONObject) array.get(i);
+			JSONObject newJSONObject = new JSONObject();
+			if (o.containsKey(vertexObject)){
+				
+				Object vertexJson =  o.get(vertexObject);
+				Gson g = new Gson();				
+				String vertex = g.toJson(vertexJson);
+				
+				JSONObject newJS = (JSONObject) JSONValue.parse(vertex);
+				
+				
+				newJS.remove(new String("_id"));
+				newJS.remove(new String("_key"));
+				newJS.remove(new String("_rev"));
+				
+				newJSONObject.put(vertexObject, newJS);			
+			
+				if (o.containsKey(pathObject)){
+					Object pathJson =  o.get(pathObject);
+					Gson gs = new Gson();				
+					String path = gs.toJson(pathJson);
+					
+					JSONObject pathJS = (JSONObject) JSONValue.parse(path);
+					
+					if (pathJS.containsKey(edgesObject)){
+												
+						JSONArray edgeArray = (JSONArray) pathJS.get(edgesObject);
+						
+						JSONArray modifiedEdgeArray = modifyEdgeArray(edgeArray);
+						JSONObject edgeJSON = (JSONObject) modifiedEdgeArray.get(0);
+						
+						//modifiy.add(modifiedEdgeArray);
+						
+						newJSONObject.put("edge", edgeJSON);
+					}
+				}
+			newJSONObject.put(vertexObject, newJS);
+			}
+			
+			modifiy.add(newJSONObject);
+		}
+		return modifiy;
+	}
+	
+	/**
+	 * Remove useless information about edges
+	 * @param edgeArray edgeArray from ArangoDB
+	 * @return modified array without good-for-nothing information
+	 */
+	private JSONArray modifyEdgeArray(JSONArray edgeArray){
+		JSONArray modified = new JSONArray();
+		
+		for (Object newJS:edgeArray){
+			//JSONObject newJS = (JSONObject) JSONValue.parse(edge);
+				JSONObject newEdge = (JSONObject) JSONValue.parse(newJS.toString());
+				newEdge.remove(new String("_id"));
+				newEdge.remove(new String("_key"));
+				newEdge.remove(new String("_rev"));
+				newEdge.remove(new String("_from"));
+				newEdge.remove(new String("_to"));
+				modified.add(newEdge);
+			}
+		return modified;
+		
+	}
 	// ================= Swagger Resource Listing & API Declarations
 	// =====================
 

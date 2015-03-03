@@ -29,5 +29,6 @@
 	<classpathentry kind="lib" path="lib/las2peer-rest-mapper-0.3-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="lib/dbunit-2.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/arangodb-java-driver-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.2.4.jar"/>
 	<classpathentry kind="output" path="tmp/classes"/>
 </classpath>
