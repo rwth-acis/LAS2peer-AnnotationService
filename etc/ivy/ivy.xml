@@ -17,7 +17,7 @@
 		
 		<dependency org="com.arangodb" name="arangodb-java-driver" rev="2.4"/>
 		
-		<dependency org="org.dbunit" name="dbunit" rev="2.4.3"/>
+		<dependency org="com.google.code.gson" name="gson" rev="2.2.4"/>
 		
     </dependencies>
 </ivy-module>
