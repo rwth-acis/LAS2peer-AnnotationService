@@ -546,10 +546,10 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(vertexData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("data is not valid JSON!");
+				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1423,23 +1423,23 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteVertex(	@PathParam("vertexKey") String vertexKey, @ContentParam String vertexData) {
+	public HttpResponse deleteVertex(@PathParam("vertexKey") String vertexKey, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "newAnnotated" ) String collection) {
 
 		String result = "";
 		ArangoDriver conn = null;
 		try {
-			JSONObject o;
-			try {
+			//JSONObject o;
+			/*try {
 				o = (JSONObject) JSONValue.parseWithException(vertexData);
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
-			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			}*/
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
-				String graphName = "";
-				String vertexCollection = "";
+				String graphName = "Video";
+				String vertexCollection = "Videos";
 				String vertexId = "";
 				String vertexHandle = "";
 				String vertexKeyDb = "";
@@ -1450,9 +1450,11 @@ public class AnnotationsClass extends Service {
 				
 				
 				//get the graph name from the Json 
-				graphName = getKeyFromJSON(graphNameObj, o, true);
+				//graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphName = name;
 				//get the vertex collection name from the Json 
-				vertexCollection = getKeyFromJSON(vertexCollectionObj, o,true);
+				//vertexCollection = getKeyFromJSON(vertexCollectionObj, o,true);
+				vertexCollection = collection;
 				
 				vertexId = vertexKey;
 				
@@ -1469,7 +1471,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!vertexHandle.equals("")){
+				if (vertexHandle.equals("")){
 					// return HTTP Response on Vertex not found
 					result = "Vertex is not found!";
 					// return
@@ -1479,14 +1481,12 @@ public class AnnotationsClass extends Service {
 				}
 				String [] vertexHandleSplit = vertexHandle.split("/"); 
 				vertexKeyDb = vertexHandleSplit[1];
-				
-				
-				
+								
 				DeletedEntity deletedVertex = conn.graphDeleteVertex(graphName, vertexCollection, vertexKeyDb);
 				
 				if ( deletedVertex.getCode() == SUCCESSFUL_INSERT_EDGE && deletedVertex.getDeleted() == true){
 				
-					result = "Database updated.";
+					result = "Database updated. Vertex deleted";
 
 					// return
 					HttpResponse r = new HttpResponse(result);
@@ -1593,7 +1593,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!edgeHandle.equals("")){
+				if (edgeHandle.equals("")){
 					// return HTTP Response on edge not found
 					result = "Edge is not found!";
 					// return

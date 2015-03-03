@@ -152,4 +152,62 @@ public class ServiceTest {
 		AnnotationsClass cl = new AnnotationsClass();
 		assertTrue(cl.debugMapping());
 	}
+	
+	/**
+	 * Tests the AnnotationService for adding new nodes (for Videos)
+	 */
+	@Test
+	public void testCreateVideoNode()
+	{
+		//AnnotationsClass cl = new AnnotationsClass();
+		MiniClient c = new MiniClient();
+		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+		
+		try
+		{
+			c.setLogin(Long.toString(testAgent.getId()), testPass);
+			
+			//add a new video
+            ClientResponse result=c.sendRequest("PUT", mainPath +"vertex", "{\"graphName\": \"Video\", \"collection\": \"Videos\", \"id\": \"idTestingInsert\"}"); 
+            assertEquals(200, result.getHttpCode());
+            assertTrue(result.getResponse().trim().contains("Succesfully")); 
+			System.out.println("Result of 'testCreateVideoNode': " + result.getResponse().trim());
+			
+			//check if video exists -> should pass
+			//retrieve the video information
+			ClientResponse select=c.sendRequest("GET", mainPath +"vertices/idTestingInsert?part=id&collection=Videos", ""); 
+            assertEquals(200, select.getHttpCode());
+            assertTrue(select.getResponse().trim().contains("idTestingInsert")); 
+			System.out.println("Result of 'Select in testCreateVideoNode': " + select.getResponse().trim());
+			
+			//add same video -> should fail with corresponding message
+			ClientResponse insertAgain=c.sendRequest("PUT", mainPath +"vertex", "{\"graphName\": \"Video\", \"collection\": \"Videos\", \"id\": \"idTestingInsert\"}"); 
+            assertEquals(409, insertAgain.getHttpCode());
+            assertTrue(insertAgain.getResponse().trim().contains("already")); 
+			System.out.println("Result of try insert again 'testCreateVideoNode': " + insertAgain.getResponse().trim());
+			
+			//delete video
+			ClientResponse delete=c.sendRequest("DELETE", mainPath +"vertex/idTestingInsert?name=Video&collection=Videos", ""); 
+            assertEquals(200, delete.getHttpCode());
+            assertTrue(delete.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testCreateVideoNode': " + delete.getResponse().trim());
+            
+            //check if video exists -> should fail
+			ClientResponse selectAfterDelete=c.sendRequest("GET", mainPath +"vertices/idTestingInsert?part=id&collection=Videos", ""); 
+            assertEquals(404, selectAfterDelete.getHttpCode());
+            assertTrue(selectAfterDelete.getResponse().trim().contains("not")); 
+			System.out.println("Result of select after delete in 'testCreateVideoNode': " + selectAfterDelete.getResponse().trim());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			fail ( "Exception: " + e );
+		}
+		
+	}
+	
+	
+	
+	
 }
+
