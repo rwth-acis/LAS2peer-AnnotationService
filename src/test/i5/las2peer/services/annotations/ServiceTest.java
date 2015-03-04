@@ -345,7 +345,7 @@ public class ServiceTest {
 			ClientResponse deleteAnnotation=c.sendRequest("DELETE", mainPath +"vertex/idTestingAnnotationInsert?name=Video&collection=Annotations", ""); 
             assertEquals(200, deleteAnnotation.getHttpCode());
             assertTrue(deleteAnnotation.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + deleteAnnotation.getResponse().trim());
+            System.out.println("Result of delete annotation in 'testCreateVideoNode': " + deleteAnnotation.getResponse().trim());
 			
             //delete video
 			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"vertex/idTestingInsert?name=Video&collection=Videos", ""); 
