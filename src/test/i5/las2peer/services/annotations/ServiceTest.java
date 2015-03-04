@@ -361,8 +361,161 @@ public class ServiceTest {
 		
 	}
 	
+	/**
+	 *  Tests updating an annotation to a video (by creating the corresponding edge)
+	 */
+	@Test
+	public void testUpdateAnnotationToVideo()
+	{
+		//AnnotationsClass cl = new AnnotationsClass();
+		MiniClient c = new MiniClient();
+		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+		
+		try
+		{
+			c.setLogin(Long.toString(testAgent.getId()), testPass);	
+			
+			//add a new video
+            ClientResponse addVideo=c.sendRequest("PUT", mainPath +"vertex", "{\"graphName\": \"Video\", \"collection\": \"Videos\", \"id\": \"idTestingInsert\"}"); 
+            assertEquals(200, addVideo.getHttpCode());
+            assertTrue(addVideo.getResponse().trim().contains("Succesfully")); 
+			System.out.println("Result of insertVideo @ 'testUpdateAnnotationToVideo': " + addVideo.getResponse().trim());
+			
+			//check if video exists -> should pass
+			//retrieve the video information
+			ClientResponse selectVideo=c.sendRequest("GET", mainPath +"vertices/idTestingInsert?part=id&collection=Videos", ""); 
+            assertEquals(200, selectVideo.getHttpCode());
+            assertTrue(selectVideo.getResponse().trim().contains("idTestingInsert")); 
+			System.out.println("Result of get video @ 'testUpdateAnnotationToVideo': " + selectVideo.getResponse().trim());
+			
+			//create a new annotation for the video
+			ClientResponse addAnnotation=c.sendRequest("PUT", mainPath +"annotation", "{\"graphName\": \"Video\", \"collection\": \"Annotations\", \"id\": \"idTestingAnnotationInsert\", \"Title\": \"Annotation Insert Test\" , \"Location\": \"Microservice Test Class\"}"); 
+	        assertEquals(200, addAnnotation.getHttpCode());
+	        assertTrue(addAnnotation.getResponse().trim().contains("Succesfully")); 
+			System.out.println("Result of insert 'testUpdateAnnotationToVideo': " + addAnnotation.getResponse().trim());
+						
+			//check if annotation exists
+			ClientResponse selectAnnotation=c.sendRequest("GET", mainPath +"vertices/idTestingAnnotationInsert?part=id,annotationData.Title&collection=Annotations", ""); 
+            assertEquals(200, selectAnnotation.getHttpCode());
+            assertTrue(selectAnnotation.getResponse().trim().contains("idTestingAnnotationInsert")); 
+			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectAnnotation.getResponse().trim());
+			
+			//add new edge
+			ClientResponse addEdge=c.sendRequest("PUT", mainPath +"edge", "{\"graphName\": \"Video\","
+					+ " \"collection\": \"newAnnotated\", \"id\": \"idTestingEdgeInsert\", \"source\": \"idTestingInsert\", "
+					+ "\"dest\": \"idTestingAnnotationInsert\", \"destCollection\": \"Annotations\", "
+					+ "\"pos\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
+					+ "\"startTime\": \"1.324\", \"duration\": \"0.40\" }"); 
+	        assertEquals(200, addEdge.getHttpCode());
+	        assertTrue(addEdge.getResponse().trim().contains("Succesfully")); 
+			System.out.println("Result of insertEdge @ 'testUpdateAnnotationToVideo': " + addEdge.getResponse().trim());
+			
+			//check if the edge exists
+			ClientResponse selectEdge=c.sendRequest("GET", mainPath +"edges/idTestingInsert/idTestingAnnotationInsert?part=id&collection=newAnnotated", ""); 
+            assertEquals(200, selectEdge.getHttpCode());
+            assertTrue(selectEdge.getResponse().trim().contains("idTestingEdgeInsert")); 
+			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectEdge.getResponse().trim());
+			
+			//update edge
+			ClientResponse updateEdge=c.sendRequest("POST", mainPath +"edge/idTestingEdgeInsert", "{\"graphName\": \"Video\","
+					+ " \"collection\": \"newAnnotated\", \"startTime\": \"2.167\" }"); 
+	        assertEquals(200, updateEdge.getHttpCode());
+	        assertTrue(updateEdge.getResponse().trim().contains("updated")); 
+			System.out.println("Result of updateEdge @ 'testUpdateAnnotationToVideo': " + updateEdge.getResponse().trim());
+			
+			//check if the edge updated
+			ClientResponse selectUpdatedEdge=c.sendRequest("GET", mainPath +"edges/idTestingInsert/idTestingAnnotationInsert?part=id,startTime&collection=newAnnotated", ""); 
+            assertEquals(200, selectUpdatedEdge.getHttpCode());
+            assertTrue(selectUpdatedEdge.getResponse().trim().contains("2.167")); 
+			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectUpdatedEdge.getResponse().trim());
+			
+			//delete edge 
+			ClientResponse deleteEdge=c.sendRequest("DELETE", mainPath +"edge/idTestingEdgeInsert?name=Video&collection=newAnnotated", ""); 
+            assertEquals(200, deleteEdge.getHttpCode());
+            assertTrue(deleteEdge.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testUpdateAnnotationToVideo': " + deleteEdge.getResponse().trim());
+                       
+			//check if any edge still exists
+			
+			//delete annotation
+			ClientResponse deleteAnnotation=c.sendRequest("DELETE", mainPath +"vertex/idTestingAnnotationInsert?name=Video&collection=Annotations", ""); 
+            assertEquals(200, deleteAnnotation.getHttpCode());
+            assertTrue(deleteAnnotation.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete annotation in 'testUpdateAnnotationToVideo': " + deleteAnnotation.getResponse().trim());
+			
+            //delete video
+			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"vertex/idTestingInsert?name=Video&collection=Videos", ""); 
+            assertEquals(200, deleteVideo.getHttpCode());
+            assertTrue(deleteVideo.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete video @ 'testUpdateAnnotationToVideo': " + deleteVideo.getResponse().trim());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			fail ( "Exception: " + e );
+		}
+		
+	}
 	
-	
+	/**
+	 * Tests the AnnotationService for updating  nodes
+	 */
+	@Test
+	public void testUpdateNode()
+	{
+		//AnnotationsClass cl = new AnnotationsClass();
+		MiniClient c = new MiniClient();
+		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+		try
+		{
+			c.setLogin(Long.toString(testAgent.getId()), testPass);		
+			//add a new annotation
+			ClientResponse result=c.sendRequest("PUT", mainPath +"annotation", "{\"graphName\": \"Video\", \"collection\": \"Annotations\", \"id\": \"idTestingAnnotationInsert\", \"Title\": \"Annotation Insert Test\" , \"Location\": \"Microservice Test Class\"}"); 
+	        assertEquals(200, result.getHttpCode());
+	        assertTrue(result.getResponse().trim().contains("Succesfully")); 
+			System.out.println("Result of insert @ 'testUpdateNode': " + result.getResponse().trim());
+			
+			//retrieve the annotation 			
+			//check if annotation exists
+			ClientResponse select=c.sendRequest("GET", mainPath +"vertices/idTestingAnnotationInsert?part=id,annotationData.Title&collection=Annotations", ""); 
+            assertEquals(200, select.getHttpCode());
+            assertTrue(select.getResponse().trim().contains("idTestingAnnotationInsert")); 
+			System.out.println("Result of select @ 'testUpdateNode': " + select.getResponse().trim());
+			
+			//update annotation
+			ClientResponse updateNode=c.sendRequest("POST", mainPath +"vertex/idTestingAnnotationInsert", "{ \"graphName\": \"Video\", \"collection\": \"Annotations\", "
+					+ " \"annotationData\" : {\"Location\": \"UpdatedLocation :)\" }}"); 
+	        assertEquals(200, updateNode.getHttpCode());
+	        assertTrue(updateNode.getResponse().trim().contains("updated")); 
+			System.out.println("Result of update @ 'testUpdateNode': " + updateNode.getResponse().trim());
+			
+			//retrieve the annotation 			
+			//check if updated
+			ClientResponse selectAgain=c.sendRequest("GET", mainPath +"vertices/idTestingAnnotationInsert?part=id,annotationData.Location&collection=Annotations", ""); 
+            assertEquals(200, selectAgain.getHttpCode());
+            assertTrue(selectAgain.getResponse().trim().contains("UpdatedLocation")); 
+			System.out.println("Result of selectAgain @ 'testUpdateNode': " + selectAgain.getResponse().trim());
+			
+			//delete annotation
+			ClientResponse delete=c.sendRequest("DELETE", mainPath +"vertex/idTestingAnnotationInsert?name=Video&collection=Annotations", ""); 
+            assertEquals(200, delete.getHttpCode());
+            assertTrue(delete.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testUpdateNode': " + delete.getResponse().trim());
+			
+			//check if annotation exists
+            ClientResponse selectAgainNew=c.sendRequest("GET", mainPath +"vertices/idTestingAnnotationInsert?part=id,annotationData.Title&collection=Annotations", ""); 
+            assertEquals(404, selectAgainNew.getHttpCode());
+            assertTrue(selectAgainNew.getResponse().trim().contains("not")); 
+			System.out.println("Result of select again in 'testUpdateNode': " + selectAgainNew.getResponse().trim());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			fail ( "Exception: " + e );
+		}
+		
+	}
+	 
 	
 }
 

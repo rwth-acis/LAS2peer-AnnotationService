@@ -1199,7 +1199,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!vertexHandle.equals("")){
+				if (vertexHandle.equals("")){
 					// return HTTP Response on vertex not found
 					result = "Vertex is not found!";
 					// return
@@ -1222,8 +1222,7 @@ public class AnnotationsClass extends Service {
 				
 				DocumentEntity<?> updatedVertex = conn.graphUpdateVertex(graphName, vertexCollection, vertexKeyDb, vertexFromDB, true);
 				
-				if ( updatedVertex.getCode() == SUCCESSFUL_INSERT_EDGE){
-				
+				if ( updatedVertex.getCode() == 202){
 					result = "Database updated.";
 
 					// return
@@ -1336,7 +1335,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!edgeHandle.equals("")){
+				if (edgeHandle.equals("")){
 					// return HTTP Response on edge not found
 					result = "Edge is not found!";
 					// return
