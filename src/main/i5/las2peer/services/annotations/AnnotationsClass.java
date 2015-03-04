@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
@@ -2049,6 +2050,138 @@ public class AnnotationsClass extends Service {
 		}
 
 	}
+	
+	/**
+	 * Add new edge
+	 * @param edgeData Data for the edge we want to store.
+	 * @return HttpResponse
+	 */
+	@PUT
+	@Path("import")
+	@Summary("Insert new edge")
+	@Notes("Requires authentication. {\"graphName\": \"Video\", \"collection\": \"newAnnotated\", \"id\": \"1\", \"source\": \"124\","
+			+ " \"dest\": \"1\", \"destCollection\": \"Annotations\","
+			+ " \"pos\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
+			+ "\"startTime\": \"1.324\", \"duration\": \"0.40\" }")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Edge saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 409, message = "Edge already exists."),
+			@ApiResponse(code = 500, message = "Internal error.") })
+	public HttpResponse importVideoWithAnnotations(@ContentParam String videoData) {
+
+		String result = "";
+		ArangoDriver conn = null;
+		try {
+			JSONObject o;
+			try{	
+				o = (JSONObject) JSONValue.parseWithException(videoData);
+			} catch (ParseException e1) {
+				throw new IllegalArgumentException("Data is not valid JSON!");
+			}
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
+					.getId()) {
+				
+				conn = dbm.getConnection();
+				String graphName = "";
+				String graphCollection = "";
+				String sourceId = "";
+				String destId = "";
+				String destCollection = "";
+				String sourceHandle = "";
+				String destHandle = "";
+				String id = "";
+				
+				Object graphNameObj = new String("graphName");
+				Object graphCollectionObj = new String("collection");
+				Object annotationsObj = new String("annotations");
+				Object positionObj = new String("position");
+				Object time = new String("time");
+				Object idObj = new String("id");
+				JSONArray annotatoionArray = null;
+				JSONObject newEdge = null;
+				
+				//get the graph name from the Json 
+				graphName = getKeyFromJSON(graphNameObj, o, false);
+				id = getKeyFromJSON(idObj, o, false);
+				graphCollection = getKeyFromJSON(graphCollectionObj, o,false);
+				
+				DocumentEntity<JSONObject> newVideo = null;
+				DocumentEntity<Annotation> annotation = null;
+				EdgeEntity<?> edge = null;
+				
+				if (!id.equals("")){
+					sourceHandle = getVertexHandle(id, "", graphName);
+					if (sourceHandle.equals("")){
+						JSONObject newNode = new JSONObject();
+						newNode.put("id", o.get(idObj));
+						newVideo = conn.graphCreateVertex(graphName, graphCollection, o, true);
+						sourceHandle = newVideo.getDocumentHandle();
+					}
+				}
+										
+				//get Annotations one by one
+				if (o.containsKey(annotationsObj)){
+					annotatoionArray = (JSONArray) o.get(annotationsObj);
+					for (Object newJSON:annotatoionArray){
+						//JSONObject newJS = (JSONObject) JSONValue.parse(edge);
+							JSONObject newAnnotation = (JSONObject) JSONValue.parse(newJSON.toString());
+							newEdge = new JSONObject();
+							if (newAnnotation.containsKey(positionObj)){
+								newEdge.put("position", newAnnotation.get(positionObj));
+								newAnnotation.remove(positionObj);
+							}
+							if (newAnnotation.containsKey(time)){
+								newEdge.put("time", newAnnotation.get(time));
+								newAnnotation.remove(time);
+							}
+								
+							String uuid = UUID.randomUUID().toString();
+							annotation = conn.graphCreateVertex(graphName, "Annotations", new Annotation(uuid, newAnnotation), true);
+							destHandle = annotation.getDocumentHandle();
+							//add new edge
+							String uuid2 = UUID.randomUUID().toString();
+							newEdge.put("id", uuid2);
+							edge = conn.graphCreateEdge(graphName, "newAnnotated", null, sourceHandle, destHandle, newEdge, null);
+						}
+				}
+				result = "Comleted Succesfully";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(200);
+				return r;
+			} else {
+				result = "User in not authenticated";
+
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(401);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+	}
 	/*@GET
 	@Path("graph")
 	@ResourceListApi(description = "Return details for a selected graph")
@@ -2577,6 +2710,7 @@ public class AnnotationsClass extends Service {
 						JSONArray edgeArray = (JSONArray) pathJS.get(edgesObject);
 						
 						JSONArray modifiedEdgeArray = modifyEdgeArray(edgeArray);
+						//==================================================
 						JSONObject edgeJSON = (JSONObject) modifiedEdgeArray.get(0);
 						
 						//modifiy.add(modifiedEdgeArray);
