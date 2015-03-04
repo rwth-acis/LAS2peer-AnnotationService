@@ -691,7 +691,7 @@ public class AnnotationsClass extends Service {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -833,7 +833,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1161,7 +1161,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1299,7 +1299,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1423,7 +1423,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteVertex(@PathParam("vertexKey") String vertexKey, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "newAnnotated" ) String collection) {
+	public HttpResponse deleteVertex(@PathParam("vertexKey") String vertexKey, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 
 		String result = "";
 		ArangoDriver conn = null;
@@ -1548,18 +1548,18 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Edge not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteEdge(	@PathParam("edgeKey") String edgeKey, @ContentParam String edgeData) {
+	public HttpResponse deleteEdge(	@PathParam("edgeKey") String edgeKey,@QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "newAnnotated") String collection) {
 
 		String result = "";
 		ArangoDriver conn = null;
 		try {
-			JSONObject o;
-			try {
+			//JSONObject o;
+			/*try {
 				o = (JSONObject) JSONValue.parseWithException(edgeData);
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
-			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			}*/
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1574,9 +1574,9 @@ public class AnnotationsClass extends Service {
 				
 				
 				//get the graph name from the Json 
-				graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphName = name;
 				//get the edge collection name from the Json 
-				edgeCollection = getKeyFromJSON(edgeCollectionObj, o,true);
+				edgeCollection = collection;
 				
 				edgeId = edgeKey;
 				
@@ -1608,7 +1608,7 @@ public class AnnotationsClass extends Service {
 				
 				if ( deletedEdge.getCode() == SUCCESSFUL_INSERT_EDGE && deletedEdge.getDeleted()){
 				
-					result = "Database updated.";
+					result = "Database updated. Edge deleted";
 
 					// return
 					HttpResponse r = new HttpResponse(result);
@@ -2522,7 +2522,7 @@ public class AnnotationsClass extends Service {
 		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceEdgeMap).get();
 		CursorEntity<JSONObject> resSourceById = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceEdgeByID, null, JSONObject.class, true, 1);
+			resSourceById = conn.executeQuery(	getSourceEdgeByID, null, JSONObject.class, true, 100);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
