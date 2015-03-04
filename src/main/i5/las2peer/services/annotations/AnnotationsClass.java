@@ -423,7 +423,6 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 409, message = "Vertex already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse addNewVertex() {
-
 		String result = "";
 		ArangoDriver conn = null;
 		PreparedStatement stmnt = null;
@@ -434,7 +433,6 @@ public class AnnotationsClass extends Service {
 			conn = dbm.getConnection();
 			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
 					.getId()) {
-
 				
 				 * id1 = conn.graphCreateVertex("Video", "Videos", new
 				 * Video("1", "TestVideo1"), true); id2 =
@@ -446,7 +444,6 @@ public class AnnotationsClass extends Service {
 				 * conn.graphCreateVertex("Video", "Annotations", new
 				 * Annotation("3", "Annotation3"), true);
 				 
-
 				for (int i = 500; i < 1000; i++) {
 					conn.graphCreateVertex("Video", "Videos",
 							new Video(Integer.toString(i), "TestVideo"
@@ -460,21 +457,17 @@ public class AnnotationsClass extends Service {
 									+ Integer.toString(i)), true);
 				}
 				result = "Comleted Succesfully";
-
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(200);
 				return r;
-
 			} else {
 				result = "User in not authenticated";
-
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(401);
 				return r;
 			}
-
 		} catch (Exception e) {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
@@ -488,7 +481,6 @@ public class AnnotationsClass extends Service {
 					rs.close();
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -501,7 +493,6 @@ public class AnnotationsClass extends Service {
 					stmnt.close();
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -514,7 +505,6 @@ public class AnnotationsClass extends Service {
 					conn = null;
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -546,10 +536,10 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(vertexData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("data is not valid JSON!");
+				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -691,7 +681,7 @@ public class AnnotationsClass extends Service {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -833,7 +823,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -958,7 +948,6 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 409, message = "Edge already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse addNewEdge() {
-
 		String result = "";
 		ArangoDriver conn = null;
 		PreparedStatement stmnt = null;
@@ -970,13 +959,10 @@ public class AnnotationsClass extends Service {
 		try {
 			JSONObject o;
 			conn = dbm.getConnection();
-
 			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
 					.getId()) {
-
 				conn = null;
 				conn = dbm.getConnection();
-
 				String geteAnnotationID = "for i in GRAPH_VERTICES('Video',  null,{vertexCollectionRestriction : 'Annotations' }) return i._id";
 				// Map<String, Object> bindVarseAnnotation = new
 				// MapBuilder().put("id", exampleAnnotationMap).get();
@@ -989,23 +975,18 @@ public class AnnotationsClass extends Service {
 				while (iteratorAnnotationById.hasNext()) {
 					annotationID.add(iteratorAnnotationById.next());
 				}
-
 				conn = null;
 				conn = dbm.getConnection();
-
 				String getVertexByID = "for i in GRAPH_VERTICES('Video',  {},{vertexCollecitonRestriction : 'Videos' }) return i._id";
 				CursorEntity<String> resVertexById = conn.executeQuery(
 						getVertexByID, null, String.class, true, 500);
 				Iterator<String> iteratorVertexById = resVertexById.iterator();
 				String videoKey = "";
-
 				while (iteratorVertexById.hasNext()) {
 					videoID.add(iteratorVertexById.next());
 				}
-
 				conn = null;
 				conn = dbm.getConnection();
-
 				for (int i = 0; i < 400; i++) {
 					int rand_indexVideo = Math.abs(rand.nextInt() % 500);
 					int rand_indexAnnotation = Math.abs(rand.nextInt() % 500);
@@ -1020,10 +1001,8 @@ public class AnnotationsClass extends Service {
 							annotationID.get(rand_indexAnnotation),
 							new VideoEdge(rand_startTime, rand_duration), null);
 				}
-
 				// id1 = conn.graphCreateVertex("Video", "Videos", new
 				// Video("503", "TestVideo503"), true);
-
 				// Map<String, Object> bindVars = new MapBuilder().put("id",
 				// exampleVertexMap).get();
 				
@@ -1053,7 +1032,6 @@ public class AnnotationsClass extends Service {
 				 * 10*r.nextDouble(),r.nextDouble()), true);
 				 * Logger.getLogger("Test"); }
 				 
-
 				
 				 * EdgeEntity<String> edg1 = conn.graphCreateEdge("Video",
 				 * "annotated", null, id1.getDocumentHandle(),
@@ -1066,23 +1044,18 @@ public class AnnotationsClass extends Service {
 				 * conn.graphCreateEdge("Video", "annotated", null,
 				 * id2.getDocumentHandle(), ann3.getDocumentHandle());
 				 
-
 				result = "Comleted Succesfully";
-
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(200);
 				return r;
-
 			} else {
 				result = "User in not authenticated";
-
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(401);
 				return r;
 			}
-
 		} catch (Exception e) {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
@@ -1096,7 +1069,6 @@ public class AnnotationsClass extends Service {
 					rs.close();
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -1109,7 +1081,6 @@ public class AnnotationsClass extends Service {
 					stmnt.close();
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -1122,7 +1093,6 @@ public class AnnotationsClass extends Service {
 					conn = null;
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -1161,7 +1131,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1299,7 +1269,7 @@ public class AnnotationsClass extends Service {
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
 			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1423,23 +1393,23 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Vertex not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteVertex(	@PathParam("vertexKey") String vertexKey, @ContentParam String vertexData) {
+	public HttpResponse deleteVertex(@PathParam("vertexKey") String vertexKey, @QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 
 		String result = "";
 		ArangoDriver conn = null;
 		try {
-			JSONObject o;
-			try {
+			//JSONObject o;
+			/*try {
 				o = (JSONObject) JSONValue.parseWithException(vertexData);
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
-			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			}*/
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
-				String graphName = "";
-				String vertexCollection = "";
+				String graphName = "Video";
+				String vertexCollection = "Videos";
 				String vertexId = "";
 				String vertexHandle = "";
 				String vertexKeyDb = "";
@@ -1450,9 +1420,11 @@ public class AnnotationsClass extends Service {
 				
 				
 				//get the graph name from the Json 
-				graphName = getKeyFromJSON(graphNameObj, o, true);
+				//graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphName = name;
 				//get the vertex collection name from the Json 
-				vertexCollection = getKeyFromJSON(vertexCollectionObj, o,true);
+				//vertexCollection = getKeyFromJSON(vertexCollectionObj, o,true);
+				vertexCollection = collection;
 				
 				vertexId = vertexKey;
 				
@@ -1469,7 +1441,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!vertexHandle.equals("")){
+				if (vertexHandle.equals("")){
 					// return HTTP Response on Vertex not found
 					result = "Vertex is not found!";
 					// return
@@ -1479,14 +1451,12 @@ public class AnnotationsClass extends Service {
 				}
 				String [] vertexHandleSplit = vertexHandle.split("/"); 
 				vertexKeyDb = vertexHandleSplit[1];
-				
-				
-				
+								
 				DeletedEntity deletedVertex = conn.graphDeleteVertex(graphName, vertexCollection, vertexKeyDb);
 				
 				if ( deletedVertex.getCode() == SUCCESSFUL_INSERT_EDGE && deletedVertex.getDeleted() == true){
 				
-					result = "Database updated.";
+					result = "Database updated. Vertex deleted";
 
 					// return
 					HttpResponse r = new HttpResponse(result);
@@ -1548,18 +1518,18 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Edge not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteEdge(	@PathParam("edgeKey") String edgeKey, @ContentParam String edgeData) {
+	public HttpResponse deleteEdge(	@PathParam("edgeKey") String edgeKey,@QueryParam(name = "name", defaultValue = "Video" ) String name, @QueryParam(name = "collection", defaultValue = "newAnnotated") String collection) {
 
 		String result = "";
 		ArangoDriver conn = null;
 		try {
-			JSONObject o;
-			try {
+			//JSONObject o;
+			/*try {
 				o = (JSONObject) JSONValue.parseWithException(edgeData);
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException( "Data is not valid JSON!" );
-			}
-			if (getActiveAgent().getId() == getActiveNode().getAnonymous()
+			}*/
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
 				conn = dbm.getConnection();
@@ -1574,9 +1544,9 @@ public class AnnotationsClass extends Service {
 				
 				
 				//get the graph name from the Json 
-				graphName = getKeyFromJSON(graphNameObj, o, true);
+				graphName = name;
 				//get the edge collection name from the Json 
-				edgeCollection = getKeyFromJSON(edgeCollectionObj, o,true);
+				edgeCollection = collection;
 				
 				edgeId = edgeKey;
 				
@@ -1593,7 +1563,7 @@ public class AnnotationsClass extends Service {
 					return er;
 				}
 				
-				if (!edgeHandle.equals("")){
+				if (edgeHandle.equals("")){
 					// return HTTP Response on edge not found
 					result = "Edge is not found!";
 					// return
@@ -1608,7 +1578,7 @@ public class AnnotationsClass extends Service {
 				
 				if ( deletedEdge.getCode() == SUCCESSFUL_INSERT_EDGE && deletedEdge.getDeleted()){
 				
-					result = "Database updated.";
+					result = "Database updated. Edge deleted";
 
 					// return
 					HttpResponse r = new HttpResponse(result);
@@ -2069,10 +2039,8 @@ public class AnnotationsClass extends Service {
 			conn = dbm.getConnection();
 			selectquery = "for v in GRAPH_VERTICES ('Video', {}) return v";
 			String query = "for i in GRAPH_EDGES('Video', null) return i";
-
 			CursorEntity<VideoEdge> res = conn.executeQuery(query, null,
 					VideoEdge.class, true, 100);
-
 			Iterator<VideoEdge> iterator = res.iterator();
 			while (iterator.hasNext()) {
 				ro = new JSONObject();
@@ -2083,7 +2051,6 @@ public class AnnotationsClass extends Service {
 				ro.put("Duration ", edge.getDuration());
 				qs.add(ro);
 			}
-
 			CursorEntity<Video> resVertex = conn.executeQuery(selectquery,
 					null, Video.class, true, 500);
 			Iterator<Video> iteratorVertex = resVertex.iterator();
@@ -2094,7 +2061,6 @@ public class AnnotationsClass extends Service {
 				ro.put("Title ", v.getTitle());
 				qs.add(ro);
 			}
-
 			Map<String, Object> exampleVertexMap = new MapBuilder().put("id",
 					"20").get();
 			String getVertexByID = "for i in GRAPH_VERTICES('Video', @id,{vertexCollecitonRestriction:'Videos'}) return i";
@@ -2111,14 +2077,11 @@ public class AnnotationsClass extends Service {
 				ro.put("SelectedTitle ", v.getTitle());
 				qs.add(ro);
 			}
-
 			String getAnnotations = "for i in GRAPH_NEIGHBORS('Video', @selectedVideo, {endVertexCollectionRestriction : 'Annotations'}) return i.vertex";
 			Map<String, Object> bindVars2 = new MapBuilder().put(
 					"selectedVideo", v).get();
-
 			CursorEntity<Annotation> resAnnotation = conn.executeQuery(
 					getAnnotations, bindVars2, Annotation.class, true, 100);
-
 			qs.add("Vertices that have inbound edge with TestVideo 20");
 			Iterator<Annotation> iteratorAnnotation = resAnnotation.iterator();
 			while (iteratorAnnotation.hasNext()) {
@@ -2129,12 +2092,10 @@ public class AnnotationsClass extends Service {
 				qs.add(ro);
 			}
 			// prepare statement
-
 			// return HTTP Response on success
 			HttpResponse r = new HttpResponse(qs.toJSONString());
 			r.setStatus(200);
 			return r;
-
 		} catch (Exception e) {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
@@ -2147,7 +2108,6 @@ public class AnnotationsClass extends Service {
 					conn = null;
 				} catch (Exception e) {
 					Context.logError(this, e.getMessage());
-
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
@@ -2156,7 +2116,6 @@ public class AnnotationsClass extends Service {
 				}
 			}
 		}
-
 	}*/
 	
 	/**
@@ -2522,7 +2481,7 @@ public class AnnotationsClass extends Service {
 		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceEdgeMap).get();
 		CursorEntity<JSONObject> resSourceById = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceEdgeByID, null, JSONObject.class, true, 1);
+			resSourceById = conn.executeQuery(	getSourceEdgeByID, null, JSONObject.class, true, 100);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
