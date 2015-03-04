@@ -153,7 +153,10 @@ public class ServiceTest {
 		assertTrue(cl.debugMapping());
 	}
 	
+<<<<<<< .merge_file_a03288
 
+=======
+>>>>>>> .merge_file_a10800
 	/**
 	 * Tests the AnnotationService for adding new nodes (for Videos)
 	 */
@@ -364,4 +367,9 @@ public class ServiceTest {
 	
 	
 	
+<<<<<<< .merge_file_a03288
+=======
+	
+>>>>>>> .merge_file_a10800
 }
+
