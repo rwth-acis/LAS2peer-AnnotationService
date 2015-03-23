@@ -19,5 +19,10 @@
 		
 		<dependency org="com.google.code.gson" name="gson" rev="2.2.4"/>
 		
+		<dependency org="org.apache.httpcomponents" name="httpclient" rev="4.3.2"/>
+		<dependency org="org.apache.httpcomponents" name="httpcore" rev="4.4"/>
+		
+		
+		
     </dependencies>
 </ivy-module>
