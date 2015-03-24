@@ -325,8 +325,8 @@ public class AnnotationsClass extends Service {
 	 * @return HttpResponse
 	 */
 
-	@PUT
-	@Path("object")
+	@POST
+	@Path("objects")
 	@Summary("Insert new object. This object stores only the id of an item. The item can be video, image"
 			+ "or any think stored by another microservice. Payload specifies the collection where this item "
 			+ "should be stored.")
@@ -457,8 +457,9 @@ public class AnnotationsClass extends Service {
 	 * @param annotationData Annotation details that need to be saved. The data come in a JSON format
 	 * @return HttpResponse
 	 */
-	@PUT
-	@Path("annotation")
+	@POST
+	@Path("annotations")
+	@ResourceListApi(description = "Annotations store details like title, text of an annotations.")
 	@Summary("Insert new annotation. This object stores data for a new Annotation.")
 	@Notes("Requires authentication. JSON format \"collection\": \"Annotations\",  ...Additional data ")
 	@ApiResponses(value = {
@@ -599,8 +600,10 @@ public class AnnotationsClass extends Service {
 	 * @param annotationContextData Data for the annotationContext we want to store.
 	 * @return HttpResponse
 	 */
-	@PUT
-	@Path("annotationContext")
+	@POST
+	@Path("annotationContexts")
+	@ResourceListApi(description = "AnnotationContext stores the information for the realation between an object and an annotations."
+			+ " This information contains elements like position of the annotation in the object, time when it is shown and its duration. ")
 	@Summary("Insert new annotationContext. Annotation Context stores information about the connection"
 			+ " between an Object and an Annotation. This information contaions: positon, start time and duration of the annotation")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
@@ -745,8 +748,8 @@ public class AnnotationsClass extends Service {
 	 * @return HttpResponse with the result of the method
 	 */
 
-	@POST
-	@Path("object/{objectKey}")
+	@PUT
+	@Path("objects/{objectKey}")
 	@Summary("update details of an existing object. The object can also be an annotation.")
 	@Notes("Requires authentication. JSON: { \"collection\": \"Videos\", \"title\": \"Updated Title :)\" }")
 	@ApiResponses(value = {
@@ -882,8 +885,8 @@ public class AnnotationsClass extends Service {
 	 * @return HttpResponse with the result of the method
 	 */
 
-	@POST
-	@Path("annotationContext/{annotationContextId}")
+	@PUT
+	@Path("annotationContexts/{annotationContextId}")
 	@Summary("update details for an existing AnnotationContext.")
 	@Notes("Requires authentication. JSON: {  "
 			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
@@ -1049,7 +1052,7 @@ public class AnnotationsClass extends Service {
 	 */
 
 	@DELETE
-	@Path("object/{objectId}")
+	@Path("objects/{objectId}")
 	@Summary("Delete an existing object.")
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
@@ -1160,7 +1163,7 @@ public class AnnotationsClass extends Service {
 	 */
 
 	@DELETE
-	@Path("annotationContext/{annotationContextId}")
+	@Path("annotationContexts/{annotationContextId}")
 	@Summary("Delete an existing annotationContext.")
 	@Notes("Requires authentication.}")
 	@ApiResponses(value = {
@@ -1267,7 +1270,6 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotations/{objectId}")
-	@ResourceListApi(description = "Return annotations for a selected object")
 	@Summary("return a JSON with the details of annotations for the given objectId")
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1399,7 +1401,6 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("objects/{objectId}")
-	@ResourceListApi(description = "Return details for a selected object")
 	@Summary("return a JSON with stored object details")
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1470,7 +1471,7 @@ public class AnnotationsClass extends Service {
 	
 	@GET
 	@Path("objects")
-	@ResourceListApi(description = "Return details for a selected object")
+	@ResourceListApi(description = "Objects that can be annotated")
 	@Summary("return a JSON with object details stored in the given graph Name")
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1553,7 +1554,6 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotationContexts/{sourceId}/{destId}")
-	@ResourceListApi(description = "Return annotationContexts between two specified objects")
 	@Summary("return a JSON with stored annotationContexts details ")
 	@Notes("query parameter selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1638,7 +1638,7 @@ public class AnnotationsClass extends Service {
 	 * @param annotationContextData Data for the annotationContext we want to store.
 	 * @return HttpResponse
 	 */
-	@PUT
+	@POST
 	@Path("import")
 	@Summary("Import from AchSo! files")
 	@Notes("Requires authentication.")
