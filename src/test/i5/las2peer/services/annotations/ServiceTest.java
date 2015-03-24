@@ -276,7 +276,7 @@ public class ServiceTest {
 	}
 	
 	/**
-	 *  Tests adding an annotation to a video (by creating the corresponding edge)
+	 *  Tests adding an annotation to a video (by creating the corresponding annotationContext)
 	 */
 	@Test
 	public void testAddAnnotationToVideo()
@@ -329,16 +329,16 @@ public class ServiceTest {
             assertTrue(selectAnnotation.getResponse().trim().contains(annotationId)); 
 			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotation.getResponse().trim());
 			
-			//add new edge
-			ClientResponse addEdge=c.sendRequest("PUT", mainPath +"annotationContext", "{ "
+			//add new annotationContext
+			ClientResponse addAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContext", "{ "
 					+ "\"source\": \"" + objectId + "\", \"dest\": \"" + annotationId + "\", "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }"); 
-	        assertEquals(200, addEdge.getHttpCode());
-	        assertTrue(addEdge.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertEdge @ 'testAddAnnotationToVideo': " + addEdge.getResponse().trim());
+	        assertEquals(200, addAnnotationContext.getHttpCode());
+	        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
+			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
 			try{	
-				annotationContext = (JSONObject) JSONValue.parseWithException(addEdge.getResponse());
+				annotationContext = (JSONObject) JSONValue.parseWithException(addAnnotationContext.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
@@ -462,47 +462,47 @@ public class ServiceTest {
             assertTrue(selectAnnotation.getResponse().trim().contains(annotationId)); 
 			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectAnnotation.getResponse().trim());
 			
-			//add new edge
-			ClientResponse addEdge=c.sendRequest("PUT", mainPath +"annotationContext", "{ "
+			//add new AnnotationContext
+			ClientResponse addAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContext", "{ "
 					+ "\"source\": \"" + objectId + "\", \"dest\": \"" + annotationId + "\", "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }"); 
-	        assertEquals(200, addEdge.getHttpCode());
-	        assertTrue(addEdge.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertEdge @ 'testAddAnnotationToVideo': " + addEdge.getResponse().trim());
+	        assertEquals(200, addAnnotationContext.getHttpCode());
+	        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
+			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
 			try{	
-				annotationContext = (JSONObject) JSONValue.parseWithException(addEdge.getResponse());
+				annotationContext = (JSONObject) JSONValue.parseWithException(addAnnotationContext.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			String annotationContextId = (String) annotationContext.get(new String("id"));
 			
-			//check if the edge exists
+			//check if the AnnotationContext exists
 			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id&collection=newAnnotated", ""); 
             assertEquals(200, selectAnnotationContext.getHttpCode());
             assertTrue(selectAnnotationContext.getResponse().trim().contains(annotationContextId)); 
 			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContext.getResponse().trim());
 			
-			//update edge
-			ClientResponse updateEdge=c.sendRequest("POST", mainPath +"annotationContext/" + annotationContextId + "", "{ "
+			//update AnnotationContext
+			ClientResponse updateAnnotationContext=c.sendRequest("POST", mainPath +"annotationContext/" + annotationContextId + "", "{ "
 					+ " \"time\": \"2.167\" }"); 
-	        assertEquals(200, updateEdge.getHttpCode());
-	        assertTrue(updateEdge.getResponse().trim().contains("2.167")); 
-			System.out.println("Result of updateEdge @ 'testUpdateAnnotationToVideo': " + updateEdge.getResponse().trim());
+	        assertEquals(200, updateAnnotationContext.getHttpCode());
+	        assertTrue(updateAnnotationContext.getResponse().trim().contains("2.167")); 
+			System.out.println("Result of updateAnnotationContext @ 'testUpdateAnnotationToVideo': " + updateAnnotationContext.getResponse().trim());
 			
-			//check if the edge updated
-			ClientResponse selectUpdatedEdge=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id,time&collection=newAnnotated", ""); 
-            assertEquals(200, selectUpdatedEdge.getHttpCode());
-            assertTrue(selectUpdatedEdge.getResponse().trim().contains("2.167")); 
-			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectUpdatedEdge.getResponse().trim());
+			//check if the AnnotationContext updated
+			ClientResponse selectUpdatedAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id,time&collection=newAnnotated", ""); 
+            assertEquals(200, selectUpdatedAnnotationContext.getHttpCode());
+            assertTrue(selectUpdatedAnnotationContext.getResponse().trim().contains("2.167")); 
+			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectUpdatedAnnotationContext.getResponse().trim());
 			
-			//delete edge 
-			ClientResponse deleteEdge=c.sendRequest("DELETE", mainPath +"annotationContext/" + annotationContextId + "", ""); 
-            assertEquals(200, deleteEdge.getHttpCode());
-            assertTrue(deleteEdge.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testUpdateAnnotationToVideo': " + deleteEdge.getResponse().trim());
+			//delete AnnotationContext 
+			ClientResponse deleteAnnotationContext=c.sendRequest("DELETE", mainPath +"annotationContext/" + annotationContextId + "", ""); 
+            assertEquals(200, deleteAnnotationContext.getHttpCode());
+            assertTrue(deleteAnnotationContext.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testUpdateAnnotationToVideo': " + deleteAnnotationContext.getResponse().trim());
                        
-			//check if any edge still exists
+			//check if any AnnotationContext still exists
 			
 			//delete annotation
 			ClientResponse deleteAnnotation=c.sendRequest("DELETE", mainPath +"object/" + annotationId + "", ""); 
