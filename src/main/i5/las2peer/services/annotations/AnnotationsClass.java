@@ -104,29 +104,6 @@ public class AnnotationsClass extends Service {
 	}
 
 	/**
-	 * Function to validate a user login.
-	 * 
-	 * @return HttpRespons
-	 * 
-	 */
-	@GET
-	@Produces(MediaType.TEXT_HTML)
-	@Path("validation")
-	@ResourceListApi(description = "Check the user")
-	@Summary("Return a greeting for the logged in user")
-	@Notes("This is an example method")
-	@ApiResponses(value = { @ApiResponse(code = 200, message = "The user is logged in"), })
-	public HttpResponse validateLogin() {
-		String returnString = "";
-		returnString += "You are "
-				+ ((UserAgent) getActiveAgent()).getLoginName() + " !";
-
-		HttpResponse res = new HttpResponse(returnString);
-		res.setStatus(200);
-		return res;
-	}
-
-	/**
 	 * Create a new Graph
 	 * 
 	 * @param graphData Graph details that need to be saved. The data come in a JSON format
@@ -328,9 +305,9 @@ public class AnnotationsClass extends Service {
 	@POST
 	@Path("objects")
 	@Summary("Insert new object. This object stores only the id of an item. The item can be video, image"
-			+ "or any think stored by another microservice. Payload specifies the collection where this item "
-			+ "should be stored.")
-	@Notes("Requires authentication. JSON format {\"collection\": \"Videos\"}")
+			+ " or any think stored by another microservice.")
+	@Notes("Requires authentication. Payload specifies the collection where this item "
+			+ "should be stored. JSON format {\"collection\": \"Videos\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object saved successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
@@ -602,8 +579,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotationContexts")
-	@ResourceListApi(description = "AnnotationContext stores the information for the realation between an object and an annotations."
-			+ " This information contains elements like position of the annotation in the object, time when it is shown and its duration. ")
+	@ResourceListApi(description = "AnnotationContext stores the information for the realation between an object and an annotations.")
 	@Summary("Insert new annotationContext. Annotation Context stores information about the connection"
 			+ " between an Object and an Annotation. This information contaions: positon, start time and duration of the annotation")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
@@ -1472,8 +1448,8 @@ public class AnnotationsClass extends Service {
 	@GET
 	@Path("objects")
 	@ResourceListApi(description = "Objects that can be annotated")
-	@Summary("return a JSON with object details stored in the given graph Name")
-	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@Summary("Return a JSON with objects stored for one collection.")
+	@Notes("Query parameter part selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully"),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),

@@ -116,36 +116,6 @@ public class ServiceTest {
 		
     }
 	
-	
-	/**
-	 * 
-	 * Tests the validation method.
-	 * 
-	 */
-	@Test
-	public void testValidateLogin()
-	{
-		MiniClient c = new MiniClient();
-		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
-		
-		try
-		{
-			c.setLogin(Long.toString(testAgent.getId()), testPass);
-            ClientResponse result=c.sendRequest("GET", mainPath +"validation", "");
-            assertEquals(200, result.getHttpCode());
-            assertTrue(result.getResponse().trim().contains("adam")); //login name is part of response
-			System.out.println("Result of 'testValidateLogin': " + result.getResponse());
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			fail ( "Exception: " + e );
-		}
-		
-    }
-	
-	
-
 	/**
 	 * Test the ServiceClass for valid rest mapping.
 	 * Important for development.
