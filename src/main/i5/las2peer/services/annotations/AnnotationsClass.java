@@ -305,12 +305,12 @@ public class AnnotationsClass extends Service {
 	@POST
 	@Path("objects")
 	@Summary("Create new object.")
-	@Notes("Requires authentication. The object stores only the id of an item. The item can be video, image."
+	@Notes("Requires authentication. The object stores only objects id. "
 			+ " Payload specifies the collection where this item "
-			+ "should be stored. JSON format {\"collection\": \"Videos\"}")
+			+ "should be stored. JSON: {\"collection\": \"Videos\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object saved successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Object with the given id already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -441,7 +441,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication. JSON format \"collection\": \"Annotations\",  ...Additional data ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotation saved successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "Annotation already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -579,14 +579,14 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotationContexts")
-	@ResourceListApi(description = "AnnotationContext stores the information for the relation between an object and an annotations.")
+	@ResourceListApi(description = "AnnotationContext stores the relation information between an object and an annotations.")
 	@Summary("Create new annotationContext.")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
 			+ " \"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 			+ "\"time\": \"1.324\", \"duration\": \"0.40\" } .")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContext saved successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "AnnotationContext already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -719,21 +719,21 @@ public class AnnotationsClass extends Service {
 	/**
 	 * Method to update an object with a given id
 	 * 
-	 * @param objectKey  key of the object we need to update
+	 * @param objectId  key of the object we need to update
 	 * @return HttpResponse with the result of the method
 	 */
 
 	@PUT
-	@Path("objects/{objectKey}")
+	@Path("objects/{objectId}")
 	@Summary("Update given object.")
 	@Notes("Requires authentication. The object can also be an annotation. JSON: {\"title\": \"Updated Title :)\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object details updated successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Object not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse updateObject(	@PathParam("objectKey") String objectKey, @ContentParam String objectData) {
+	public HttpResponse updateObject(	@PathParam("objectId") String objectId, @ContentParam String objectData) {
 
 		String result = "";
 		ArangoDriver conn = null;
@@ -749,14 +749,11 @@ public class AnnotationsClass extends Service {
 				
 				conn = dbm.getConnection();
 				String objectCollection = "";
-				String objectId = "";
 				String objectHandle = "";
 				String objectKeyDb = "";
 				
 				JSONObject objectFromDB = null;
-								
-				objectId = objectKey;
-				
+												
 				if ( !objectId.equals("") && ! graphName.equals("")){
 					objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
 					objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
@@ -867,10 +864,10 @@ public class AnnotationsClass extends Service {
 			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
 			+ "\"duration\": \"0.40\" }")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "annotationContext details updated successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 200, message = "AnnotationContext updated successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
-			@ApiResponse(code = 404, message = "annotationContext not found."),
+			@ApiResponse(code = 404, message = "AnnotationContext not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse updateAnnotationContext(	@PathParam("annotationContextId") String annotationContextId, @ContentParam String annotationContextData) {
 
@@ -1032,7 +1029,6 @@ public class AnnotationsClass extends Service {
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object deleted successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Object not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
@@ -1058,17 +1054,7 @@ public class AnnotationsClass extends Service {
 						
 				id = objectId;
 				
-				if ( !id.equals("") && ! graphName.equals("")){
-					objectHandle = getObjectHandle(id, objectCollection, graphName);
-				} else {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key "
-							+ "\"" + objectCollection.toString() + "\""
-							+ "");
-					er.setStatus(400);
-					return er;
-				}
+				objectHandle = getObjectHandle(id, objectCollection, graphName);
 				
 				if (objectHandle.equals("")){
 					// return HTTP Response on Vertex not found
@@ -1140,12 +1126,11 @@ public class AnnotationsClass extends Service {
 	@DELETE
 	@Path("annotationContexts/{annotationContextId}")
 	@Summary("Delete given annotationContext.")
-	@Notes("Requires authentication.}")
+	@Notes("Requires authentication.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "annotationContext deleted successfully."),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
+			@ApiResponse(code = 200, message = "AnnotationContext deleted successfully."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
-			@ApiResponse(code = 404, message = "annotationContext not found."),
+			@ApiResponse(code = 404, message = "AnnotationContext not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse deleteAnnotationContext( @PathParam("annotationContextId") String annotationContextId) {
 
@@ -1163,18 +1148,7 @@ public class AnnotationsClass extends Service {
 				
 				id = annotationContextId;
 				
-				if ( !id.equals("") && ! graphName.equals("")){
-					annotationContextHandle = getAnnotationContextHandle(id, annotationContextCollection, graphName);
-				} else {
-					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ graphName.toString() + "\" and/or "
-							+ "\"" + annotationContextCollection.toString() + "\""
-							+ "");
-					er.setStatus(400);
-					return er;
-				}
+				annotationContextHandle = getAnnotationContextHandle(id, annotationContextCollection, graphName);
 				
 				if (annotationContextHandle.equals("")){
 					// return HTTP Response on AnnotationContext not found
@@ -1249,10 +1223,9 @@ public class AnnotationsClass extends Service {
 			+ "")
 	@Notes("Return a JSON with the details of the annotation. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Object annotations"),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
-			@ApiResponse(code = 404, message = "Object id does not exist"),
-			@ApiResponse(code = 500, message = "Internal error"), })
+			@ApiResponse(code = 200, message = "Object annotations retrived successfully."),
+			@ApiResponse(code = 404, message = "Object id does not exist."),
+			@ApiResponse(code = 500, message = "Internal error."), })
 	public HttpResponse getObjectAnnotations(@PathParam("objectId") String objectId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 		ArangoDriver conn = null;
 		JSONArray qs = new JSONArray();
@@ -1275,18 +1248,8 @@ public class AnnotationsClass extends Service {
 			objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
 			objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
 			
-			if ( !objectId.equals("") && ! graphName.equals("")){
-				objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
-				objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
-			} else {
-				// return HTTP Response on error
-				HttpResponse er = new HttpResponse("Internal error: "
-						+ "Missing JSON object member with key "
-						+ "\"" + objectCollection.toString() + "\""
-						+ "");
-				er.setStatus(400);
-				return er;
-			}
+			objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
+			objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
 			
 			if (objectHandle.equals("")){
 				// return HTTP Response on Vertex not found
@@ -1377,13 +1340,12 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("objects/{objectId}")
-	@Summary("Retrieve given object")
+	@Summary("Retrieve given object.")
 	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Object annotations"),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
-			@ApiResponse(code = 404, message = "Object id does not exist"),
-			@ApiResponse(code = 500, message = "Internal error"), })
+			@ApiResponse(code = 200, message = "Object retrived successfully."),
+			@ApiResponse(code = 404, message = "Object id does not exist."),
+			@ApiResponse(code = 500, message = "Internal error."), })
 	public HttpResponse getObject(@PathParam("objectId") String objectId, @QueryParam(name = "part", defaultValue = "*" ) String part) {
 		ArangoDriver conn = null;
 		try {
@@ -1447,13 +1409,12 @@ public class AnnotationsClass extends Service {
 	
 	@GET
 	@Path("objects")
-	@ResourceListApi(description = "Objects that can be annotated")
+	@ResourceListApi(description = "Objects that can be annotated.")
 	@Summary("List objects.")
-	@Notes("Returns a JSON with objects stored for given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Objects selected and retured successfully"),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
-			@ApiResponse(code = 404, message = "Object id does not exist"),
+			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
+			@ApiResponse(code = 404, message = "Object id does not exist."),
 			@ApiResponse(code = 500, message = "Internal error"), })
 	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 		ArangoDriver conn = null;
@@ -1469,18 +1430,7 @@ public class AnnotationsClass extends Service {
 			
 			conn = dbm.getConnection();
 
-			
-			if ( ! graphName.equals("")){
-				objectsFromDB = getObjectsJSON (objectCollection, graphName, part);
-			} else {
-				// return HTTP Response on error
-				HttpResponse er = new HttpResponse("Internal error: "
-						+ "Missing JSON object member with key "
-						+ "\"" + objectCollection.toString() + "\""
-						+ "");
-				er.setStatus(400);
-				return er;
-			}
+			objectsFromDB = getObjectsJSON (objectCollection, graphName, part);
 			
 			if (objectsFromDB.isEmpty()){
 				// return HTTP Response on Vertex not found
@@ -1530,14 +1480,14 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotationContexts/{sourceId}/{destId}")
-	@Summary("Retrieve annotationContext information for all annotations between a given object and a given anannotation")
+	@Summary("Retrieve annotationContext information for all annotations between a given object and a given annotation")
 	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully"),
-			@ApiResponse(code = 400, message = "JSON file is not correct"),
-			@ApiResponse(code = 404, message = "Object ids do not exist"),
-			@ApiResponse(code = 500, message = "Internal error"), })
-	public HttpResponse getAnnotationContexts(@PathParam("sourceId") String sourceId, @PathParam("destId") String destId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "newAnnotated" ) String collection) {
+			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
+			@ApiResponse(code = 404, message = "Id(s) do not exist."),
+			@ApiResponse(code = 500, message = "Internal error."), })
+	public HttpResponse getAnnotationContexts(@PathParam("sourceId") String sourceId, @PathParam("destId") String destId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Annotated" ) String collection) {
 		ArangoDriver conn = null;
 		try {
 			String sourceHandle = "";
@@ -1550,6 +1500,7 @@ public class AnnotationsClass extends Service {
 			
 			sourceHandle = getObjectHandle(sourceId, "", graphName);
 			destHandle = getObjectHandle(destId, "", graphName);
+			
 			if (sourceHandle.equals("")||destHandle.equals("")){
 				String result = "Objects not found!";
 				// return
@@ -1558,18 +1509,7 @@ public class AnnotationsClass extends Service {
 				return r;
 			}
 			
-			if ( !graphName.equals("")){
-				annotationContextsFromDB = getAnnotationContextsJSON(annotationContextCollection, graphName, sourceHandle, destHandle, part);
-				//vertexHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
-			} else {
-				// return HTTP Response on error
-				HttpResponse er = new HttpResponse("Internal error: "
-						+ "Missing object member with key \""
-						+ graphName.toString() + "\" and/or "
-						+ "");
-				er.setStatus(400);
-				return er;
-			}
+			annotationContextsFromDB = getAnnotationContextsJSON(annotationContextCollection, graphName, sourceHandle, destHandle, part);
 			
 			if (annotationContextsFromDB.isEmpty()){
 				// return HTTP Response on Vertex not found
