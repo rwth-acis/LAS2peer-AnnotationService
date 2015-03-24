@@ -1415,7 +1415,7 @@ public class AnnotationsClass extends Service {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
 			@ApiResponse(code = 404, message = "No objects found."),
-			@ApiResponse(code = 500, message = "Internal error"), })
+			@ApiResponse(code = 500, message = "Internal error."), })
 	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 		ArangoDriver conn = null;
 		try {
