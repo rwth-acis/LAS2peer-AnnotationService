@@ -579,7 +579,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotationContexts")
-	@ResourceListApi(description = "AnnotationContext stores the information for the realation between an object and an annotations.")
+	@ResourceListApi(description = "AnnotationContext stores the information for the relation between an object and an annotations.")
 	@Summary("Create new annotationContext.")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
 			+ " \"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
