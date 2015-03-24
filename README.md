@@ -12,6 +12,28 @@ In ArangoDB Objects and Annotations are stored in collections, and AnnotationCon
 * Installed Apache Ant
 * Installed [ArangoDB 2.4.5](https://www.arangodb.com/download)
 
+##Build
+
+First, create the Annotations Service database, refer to: [Database](https://github.com/rwth-acis/las2peer-annotationService/blob/master/Database.md).
+
+Then, build  Annotations Service:
+
+```
+ant all
+```
+
+##Start
+
+To start Annotations Service, use one of the available start scripts:
+  
+  * `bin/startNetwork.bat (Win)`
+  * `bin/startNetwork.sh (Unix, Mac)`
+
+After successful start,Annotations Service is available under
+
+  [http://localhost:8083/annotations](http://localhost:8083/annotations)
+  
+
 ##License
 LAS2peer-annotationService is freely distributable under the [MIT License](https://github.com/rwth-acis/las2peer-annotationService/blob/master/LICENSE).
 
