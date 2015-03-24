@@ -304,9 +304,9 @@ public class AnnotationsClass extends Service {
 
 	@POST
 	@Path("objects")
-	@Summary("Insert new object. This object stores only the id of an item. The item can be video, image"
-			+ " or any think stored by another microservice.")
-	@Notes("Requires authentication. Payload specifies the collection where this item "
+	@Summary("Create new object.")
+	@Notes("Requires authentication. The object stores only the id of an item. The item can be video, image."
+			+ " Payload specifies the collection where this item "
 			+ "should be stored. JSON format {\"collection\": \"Videos\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object saved successfully."),
@@ -437,7 +437,7 @@ public class AnnotationsClass extends Service {
 	@POST
 	@Path("annotations")
 	@ResourceListApi(description = "Annotations store details like title, text of an annotations.")
-	@Summary("Insert new annotation. This object stores data for a new Annotation.")
+	@Summary("Create new annotation.")
 	@Notes("Requires authentication. JSON format \"collection\": \"Annotations\",  ...Additional data ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotation saved successfully."),
@@ -580,8 +580,7 @@ public class AnnotationsClass extends Service {
 	@POST
 	@Path("annotationContexts")
 	@ResourceListApi(description = "AnnotationContext stores the information for the realation between an object and an annotations.")
-	@Summary("Insert new annotationContext. Annotation Context stores information about the connection"
-			+ " between an Object and an Annotation. This information contaions: positon, start time and duration of the annotation")
+	@Summary("Create new annotationContext.")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
 			+ " \"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 			+ "\"time\": \"1.324\", \"duration\": \"0.40\" } .")
@@ -726,8 +725,8 @@ public class AnnotationsClass extends Service {
 
 	@PUT
 	@Path("objects/{objectKey}")
-	@Summary("update details of an existing object. The object can also be an annotation.")
-	@Notes("Requires authentication. JSON: { \"collection\": \"Videos\", \"title\": \"Updated Title :)\" }")
+	@Summary("Update given object.")
+	@Notes("Requires authentication. The object can also be an annotation. JSON: {\"title\": \"Updated Title :)\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object details updated successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
@@ -863,7 +862,7 @@ public class AnnotationsClass extends Service {
 
 	@PUT
 	@Path("annotationContexts/{annotationContextId}")
-	@Summary("update details for an existing AnnotationContext.")
+	@Summary("Update given AnnotationContext.")
 	@Notes("Requires authentication. JSON: {  "
 			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
 			+ "\"duration\": \"0.40\" }")
@@ -1029,7 +1028,7 @@ public class AnnotationsClass extends Service {
 
 	@DELETE
 	@Path("objects/{objectId}")
-	@Summary("Delete an existing object.")
+	@Summary("Delete given object.")
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object deleted successfully."),
@@ -1140,7 +1139,7 @@ public class AnnotationsClass extends Service {
 
 	@DELETE
 	@Path("annotationContexts/{annotationContextId}")
-	@Summary("Delete an existing annotationContext.")
+	@Summary("Delete given annotationContext.")
 	@Notes("Requires authentication.}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "annotationContext deleted successfully."),
@@ -1246,8 +1245,9 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotations/{objectId}")
-	@Summary("return a JSON with the details of annotations for the given objectId")
-	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@Summary("Retrieve a given annotation."
+			+ "")
+	@Notes("Return a JSON with the details of the annotation. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object annotations"),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
@@ -1377,8 +1377,8 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("objects/{objectId}")
-	@Summary("return a JSON with stored object details")
-	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@Summary("Retrieve given object")
+	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object annotations"),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
@@ -1448,8 +1448,8 @@ public class AnnotationsClass extends Service {
 	@GET
 	@Path("objects")
 	@ResourceListApi(description = "Objects that can be annotated")
-	@Summary("Return a JSON with objects stored for one collection.")
-	@Notes("Query parameter part selects the columns that need to be returned in the JSON.")
+	@Summary("List objects.")
+	@Notes("Returns a JSON with objects stored for given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully"),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
@@ -1530,8 +1530,8 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotationContexts/{sourceId}/{destId}")
-	@Summary("return a JSON with stored annotationContexts details ")
-	@Notes("query parameter selects the columns that need to be returned in the JSON.")
+	@Summary("Retrieve annotationContext information for all annotations between a given object and a given anannotation")
+	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully"),
 			@ApiResponse(code = 400, message = "JSON file is not correct"),
