@@ -3,15 +3,15 @@
 Create database using ArangoShell
 
 ## Create Database 
-	```db._createDatabase('annotations', {}, []); ```
+	`db._createDatabase('annotations', {}, []); `
 
 ##	Switch to the newly created database
-	```db._useDatabase('annotations'); ```
+	`db._useDatabase('annotations'); `
 ## Create User
-	```require("org/arangodb/users").save('userName', 'password', true);```
+	`require("org/arangodb/users").save('userName', 'password', true);`
 	
 ## Create a graph 
-	```
+	```Shell
 	var graph_module = require("org/arangodb/general-graph");
 	var graph = graph_module._create("Video");
 	```
