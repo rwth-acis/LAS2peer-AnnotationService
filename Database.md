@@ -3,30 +3,35 @@
 Create database using ArangoShell
 
 ## Create Database 
-	`db._createDatabase('annotations', {}, []); `
-
+```
+db._createDatabase('annotations', {}, []); 
+```
 ##	Switch to the newly created database
-	`db._useDatabase('annotations'); `
+```
+db._useDatabase('annotations'); 
+```
 ## Create User
-	`require("org/arangodb/users").save('userName', 'password', true);`
+```
+require("org/arangodb/users").save('userName', 'password', true);
+```
 	
 ## Create a graph 
-	```Shell
-	var graph_module = require("org/arangodb/general-graph");
-	var graph = graph_module._create("Video");
-	```
+```
+var graph_module = require("org/arangodb/general-graph");
+var graph = graph_module._create("Video");
+```
 	
 ## Add some vertex collections
-	```
-	graph._addVertexCollection("Videos")
-	graph._addVertexCollection("Annotations")
-	```
+```
+graph._addVertexCollection("Videos")
+graph._addVertexCollection("Annotations")
+```
 
 ## Define relations
-	```
-	var rel = graph_module._relation("Annotated", ["Videos","Annotations"], ["Annotations"]);
-	graph._extendEdgeDefinitions(rel);
-	```
+```
+var rel = graph_module._relation("Annotated", ["Videos","Annotations"], ["Annotations"]);
+graph._extendEdgeDefinitions(rel);
+```
 
 ###References
 * [Create Database](https://github.com/arangodb/arangodb/issues/990)
