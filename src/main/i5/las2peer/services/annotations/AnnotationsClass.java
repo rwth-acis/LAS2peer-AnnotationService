@@ -776,12 +776,7 @@ public class AnnotationsClass extends Service {
 				String objectKeyDb = "";
 				
 				JSONObject objectFromDB = null;
-				
-				Object objectCollectionObj = new String("collection");
-				
-				//get the vertex collection name from the Json 
-				objectCollection = getKeyFromJSON(objectCollectionObj, o,true);
-				
+								
 				objectId = objectKey;
 				
 				if ( !objectId.equals("") && ! graphName.equals("")){
@@ -790,10 +785,7 @@ public class AnnotationsClass extends Service {
 				} else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
-							+ "Missing JSON object member with key \""
-							+ graphName.toString() + "\" and/or "
-							+ "\"" + objectCollectionObj.toString() + "\""
-							+ "");
+							+ "Missing ObjectId ");
 					er.setStatus(400);
 					return er;
 				}
@@ -833,6 +825,7 @@ public class AnnotationsClass extends Service {
 				
 				String [] objectHandleSplit = objectHandle.split("/"); 
 				objectKeyDb = objectHandleSplit[1];
+				objectCollection = objectHandleSplit[0];
 				
 				DocumentEntity<?> updatedObject = conn.graphUpdateVertex(graphName, objectCollection, objectKeyDb, objectFromDB, true);
 				
@@ -892,8 +885,8 @@ public class AnnotationsClass extends Service {
 	@POST
 	@Path("annotationContext/{annotationContextId}")
 	@Summary("update details for an existing AnnotationContext.")
-	@Notes("Requires authentication. JSON: { \"collection\": \"newAnnotated\", "
-			+ "\"pos\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"startTime\": \"1.324\", "
+	@Notes("Requires authentication. JSON: {  "
+			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
 			+ "\"duration\": \"0.40\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "annotationContext details updated successfully."),
@@ -1004,8 +997,6 @@ public class AnnotationsClass extends Service {
 				EdgeEntity<?> updatedAnnotationContext = conn.graphUpdateEdge(graphName, annotationContextCollection, annotationContextKeyDb, annotationContextFromDB, true);
 				
 				if ( updatedAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
-					
-					result = "Database updated.";
 
 					// return
 					HttpResponse r = new HttpResponse(annotationContextFromDB.toJSONString());
@@ -1067,7 +1058,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "Object not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteObject(@PathParam("objectId") String objectId, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
+	public HttpResponse deleteObject(@PathParam("objectId") String objectId) {
 
 		String result = "";
 		ArangoDriver conn = null;
@@ -1082,13 +1073,11 @@ public class AnnotationsClass extends Service {
 					.getId()) {
 				
 				conn = dbm.getConnection();
-				String objectCollection = "Videos";
+				String objectCollection = "";
 				String id = "";
 				String objectHandle = "";
 				String objectKeyDb = "";
 						
-				//objectCollection = getKeyFromJSON(objectCollectionObj, o,true);
-				objectCollection = collection;
 				id = objectId;
 				
 				if ( !id.equals("") && ! graphName.equals("")){
@@ -1113,7 +1102,8 @@ public class AnnotationsClass extends Service {
 				}
 				String [] objectHandleSplit = objectHandle.split("/"); 
 				objectKeyDb = objectHandleSplit[1];
-								
+				objectCollection = objectHandleSplit[0];
+				
 				DeletedEntity deletedObject = conn.graphDeleteVertex(graphName, objectCollection, objectKeyDb);
 				
 				if ( deletedObject.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT && deletedObject.getDeleted() == true){
@@ -1179,7 +1169,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "annotationContext not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse deleteAnnotationContext( @PathParam("annotationContextId") String annotationContextId, @QueryParam(name = "collection", defaultValue = "newAnnotated") String collection) {
+	public HttpResponse deleteAnnotationContext( @PathParam("annotationContextId") String annotationContextId) {
 
 		String result = "";
 		ArangoDriver conn = null;
