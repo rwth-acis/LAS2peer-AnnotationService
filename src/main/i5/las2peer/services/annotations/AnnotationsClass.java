@@ -1414,7 +1414,7 @@ public class AnnotationsClass extends Service {
 	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
-			@ApiResponse(code = 404, message = "Object id does not exist."),
+			@ApiResponse(code = 404, message = "No objects found."),
 			@ApiResponse(code = 500, message = "Internal error"), })
 	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
 		ArangoDriver conn = null;
@@ -1434,7 +1434,7 @@ public class AnnotationsClass extends Service {
 			
 			if (objectsFromDB.isEmpty()){
 				// return HTTP Response on Vertex not found
-				String result = "No objects found!";
+				String result = "No objects found.";
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setStatus(404);
