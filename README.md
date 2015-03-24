@@ -12,4 +12,7 @@ In ArangoDB Objects and Annotations are stored in collections, and AnnotationCon
 * Installed Apache Ant
 * Installed [ArangoDB 2.4.5](https://www.arangodb.com/download)
 
+##License
+LAS2peer-annotationService is freely distributable under the [MIT License](https://github.com/rwth-acis/las2peer-annotationService/blob/master/LICENSE).
+
 
