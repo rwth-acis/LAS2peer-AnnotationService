@@ -448,7 +448,7 @@ public class ServiceTest {
 			String annotationContextId = (String) annotationContext.get(new String("id"));
 			
 			//check if the AnnotationContext exists
-			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id&collection=Annotated", ""); 
+			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id", ""); 
             assertEquals(200, selectAnnotationContext.getHttpCode());
             assertTrue(selectAnnotationContext.getResponse().trim().contains(annotationContextId)); 
 			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContext.getResponse().trim());

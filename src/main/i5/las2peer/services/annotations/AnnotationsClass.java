@@ -426,8 +426,7 @@ public class AnnotationsClass extends Service {
 			}
 		}
 	}
-	
-	
+		
 	/**
 	 * Add new object, for an Annotation item. The collection where this object is added is specified
 	 * in the received JSON object. 
@@ -579,7 +578,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotationContexts")
-	@ResourceListApi(description = "AnnotationContext stores the relation information between an object and an annotations.")
+	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
 	@Summary("Create new annotationContext.")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
 			+ " \"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
@@ -1211,6 +1210,7 @@ public class AnnotationsClass extends Service {
 	}
 	
 	/**
+	 * Method to retrieve all annotations of a given object
 	 * 
 	 * @param objectId id of the source object. e.g. Annotations for a Video
 	 * @param part part of the requested output
@@ -1219,9 +1219,9 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotations/{objectId}")
-	@Summary("Retrieve a given annotation."
+	@Summary("Retrieve annotations of a given object."
 			+ "")
-	@Notes("Return a JSON with the details of the annotation. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object annotations retrived successfully."),
 			@ApiResponse(code = 404, message = "Object id does not exist."),
@@ -1332,10 +1332,10 @@ public class AnnotationsClass extends Service {
 	}
 	
 	/**
+	 * Method to retrieve a given object
 	 * 
 	 * @param objectId id of requested object
 	 * @param part requested part of the results
-	 * @param collection collection where the vertex is located
 	 * @return
 	 */
 	@GET
@@ -1475,7 +1475,7 @@ public class AnnotationsClass extends Service {
 	 * @param sourceId the source of AnnotationContexts
 	 * @param destId destination of AnnotationContexts
 	 * @param part select only parts of attributes
-	 * @param collection 
+	 * @param collection collection of AnnotationContexts
 	 * @return JSONArray with AnnotationContexts
 	 */
 	@GET
@@ -1487,7 +1487,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
 			@ApiResponse(code = 404, message = "Id(s) do not exist."),
 			@ApiResponse(code = 500, message = "Internal error."), })
-	public HttpResponse getAnnotationContexts(@PathParam("sourceId") String sourceId, @PathParam("destId") String destId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Annotated" ) String collection) {
+	public HttpResponse getAnnotationContexts(@PathParam("sourceId") String sourceId, @PathParam("destId") String destId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
 		ArangoDriver conn = null;
 		try {
 			String sourceHandle = "";
