@@ -1480,7 +1480,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotationContexts/{sourceId}/{destId}")
-	@Summary("Retrieve annotationContext information for all annotations between a given object and a given annotation")
+	@Summary("Retrieve annotationContext information between a given object and a given annotation")
 	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully."),
