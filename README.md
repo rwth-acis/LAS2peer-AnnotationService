@@ -26,8 +26,8 @@ ant all
 
 To start Annotations Service, use one of the available start scripts:
   
-  * `bin/startNetwork.bat (Win)`
-  * `bin/startNetwork.sh (Unix, Mac)`
+  * `Windows: bin/startNetwork.bat`
+  * `Unix, Mac: bin/startNetwork.sh`
 
 After successful start,Annotations Service is available under
 
