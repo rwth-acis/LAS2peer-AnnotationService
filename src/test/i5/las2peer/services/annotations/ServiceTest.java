@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import i5.las2peer.p2p.LocalNode;
+import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
 import i5.las2peer.services.annotations.AnnotationsClass;
@@ -142,7 +143,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
 			//add a new video
-            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}"); 
+            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, result.getHttpCode());
             assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testCreateVideoNode': " + result.getResponse());
@@ -201,7 +202,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);		
 			//add a new annotation
 			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"Annotations\","
-					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}"); 
+					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{}); 
 	        assertEquals(200, result.getHttpCode());
 	        assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
@@ -262,7 +263,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
 			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}"); 
+            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addVideo.getHttpCode());
             assertTrue(addVideo.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
@@ -282,7 +283,7 @@ public class ServiceTest {
 			
 			//create a new annotation for the video
 			ClientResponse addAnnotation=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"Annotations\","
-					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}"); 
+					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testCreateAnnotationNode': " + addAnnotation.getResponse().trim());
@@ -303,7 +304,7 @@ public class ServiceTest {
 			ClientResponse addAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts", "{ "
 					+ "\"source\": \"" + objectId + "\", \"dest\": \"" + annotationId + "\", "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }"); 
+					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotationContext.getHttpCode());
 	        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
 			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
@@ -324,7 +325,7 @@ public class ServiceTest {
 			ClientResponse addAnnotationContextAgain=c.sendRequest("POST", mainPath +"annotationContexts", "{ "
 					+ "\"source\": \"" + objectId + "\", \"dest\": \"" + annotationId + "\", "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }"); 
+					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotationContextAgain.getHttpCode());
 	        assertTrue(addAnnotationContextAgain.getResponse().trim().contains("id")); 
 			System.out.println("Result of insertannotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContextAgain.getResponse().trim());
@@ -396,7 +397,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
 			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\" }"); 
+            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\" }", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addVideo.getHttpCode());
             assertTrue(addVideo.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
@@ -415,7 +416,8 @@ public class ServiceTest {
 			System.out.println("Result of get video @ 'testUpdateAnnotationToVideo': " + selectVideo.getResponse().trim());
 			
 			//create a new annotation for the video
-			ClientResponse addAnnotation=c.sendRequest("POST", mainPath + "annotations", "{\"collection\": \"Annotations\", \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}"); 
+			ClientResponse addAnnotation=c.sendRequest("POST", mainPath + "annotations", "{\"collection\": \"Annotations\","
+					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert  'testCreateAnnotationNode': " + addAnnotation.getResponse().trim());
@@ -436,7 +438,7 @@ public class ServiceTest {
 			ClientResponse addAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts", "{ "
 					+ "\"source\": \"" + objectId + "\", \"dest\": \"" + annotationId + "\", "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }"); 
+					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
 	        assertEquals(200, addAnnotationContext.getHttpCode());
 	        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
 			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
@@ -448,14 +450,14 @@ public class ServiceTest {
 			String annotationContextId = (String) annotationContext.get(new String("id"));
 			
 			//check if the AnnotationContext exists
-			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id&collection=Annotated", ""); 
+			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id", ""); 
             assertEquals(200, selectAnnotationContext.getHttpCode());
             assertTrue(selectAnnotationContext.getResponse().trim().contains(annotationContextId)); 
 			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContext.getResponse().trim());
 			
 			//update AnnotationContext
 			ClientResponse updateAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContexts/" + annotationContextId + "", "{ "
-					+ " \"time\": \"2.167\" }"); 
+					+ " \"time\": \"2.167\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, updateAnnotationContext.getHttpCode());
 	        assertTrue(updateAnnotationContext.getResponse().trim().contains("2.167")); 
 			System.out.println("Result of updateAnnotationContext @ 'testUpdateAnnotationToVideo': " + updateAnnotationContext.getResponse().trim());
@@ -508,7 +510,8 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);		
 			//add a new annotation
-			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"Annotations\", \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}"); 
+			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"Annotations\","
+					+ " \"title\": \"Annotation Insert Test\" , \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, result.getHttpCode());
 	        assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
@@ -528,7 +531,7 @@ public class ServiceTest {
 			
 			//update annotation
 			ClientResponse updateNode=c.sendRequest("PUT", mainPath +"objects/" + annotationId +"", "{ "
-					+ " \"location\": \"UpdatedLocation :)\" }}"); 
+					+ " \"location\": \"UpdatedLocation :)\" }}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, updateNode.getHttpCode());
 	        assertTrue(updateNode.getResponse().trim().contains("UpdatedLocation")); 
 			System.out.println("Result of update @ 'testUpdateNode': " + updateNode.getResponse().trim());
