@@ -4,6 +4,7 @@ import i5.las2peer.api.Service;
 import i5.las2peer.restMapper.HttpResponse;
 import i5.las2peer.restMapper.MediaType;
 import i5.las2peer.restMapper.RESTMapper;
+import i5.las2peer.restMapper.annotations.Consumes;
 import i5.las2peer.restMapper.annotations.ContentParam;
 import i5.las2peer.restMapper.annotations.DELETE;
 import i5.las2peer.restMapper.annotations.GET;
@@ -58,8 +59,13 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1")
-@ApiInfo(title = "Annotations Service", description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", termsOfServiceUrl = "", contact = "bakiu@dbis.rwth-aachen.de", license = "", licenseUrl = "")
+@Version("0.1.1")
+@ApiInfo(title = "Annotations Service", 
+	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
+	termsOfServiceUrl = "", 
+	contact = "bakiu@dbis.rwth-aachen.de", 
+	license = "MIT", 
+	licenseUrl = "https://github.com/rwth-acis/las2peer-annotationService/blob/master/LICENSE")
 public class AnnotationsClass extends Service {
 
 	private String port;
@@ -161,6 +167,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeFrom.toString() + "\"");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -169,6 +176,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeFrom.toString() + "\"");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -188,6 +196,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeTo.toString() + "\"");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -196,6 +205,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ edgeTo.toString() + "\"");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -219,6 +229,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ objectCollection.toString() + "\"");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}				
@@ -304,6 +315,8 @@ public class AnnotationsClass extends Service {
 
 	@POST
 	@Path("objects")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Create new object.")
 	@Notes("Requires authentication. The object stores only objects id. "
 			+ " Payload specifies the collection where this item "
@@ -366,6 +379,7 @@ public class AnnotationsClass extends Service {
 							+ "Missing JSON object member with key \""
 							+ graphCollectionObj.toString() + "\""
 							+ "");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}															
@@ -435,6 +449,8 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotations")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = "Annotations store details like title, text of an annotations.")
 	@Summary("Create new annotation.")
 	@Notes("Requires authentication. JSON format \"collection\": \"Annotations\",  ...Additional data ")
@@ -508,6 +524,7 @@ public class AnnotationsClass extends Service {
 							+ "Missing JSON object member with key "
 							+ "\"" + graphCollectionObj.toString() + "\""
 							+ "");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -578,6 +595,8 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("annotationContexts")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
 	@Summary("Create new annotationContext.")
 	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
@@ -640,6 +659,7 @@ public class AnnotationsClass extends Service {
 							+ "\"" + annotationContextSourceObj.toString() + "\" and/or "
 							+ "\"" + annotationContextDestObj.toString() + "\" "
 							+ "");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -724,6 +744,8 @@ public class AnnotationsClass extends Service {
 
 	@PUT
 	@Path("objects/{objectId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Update given object.")
 	@Notes("Requires authentication. The object can also be an annotation. JSON: {\"title\": \"Updated Title :)\" }")
 	@ApiResponses(value = {
@@ -760,6 +782,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing ObjectId ");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -769,6 +792,7 @@ public class AnnotationsClass extends Service {
 					result = "Object is not found!";
 					// return
 					HttpResponse r = new HttpResponse(result);
+					r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					r.setStatus(404);
 					return r;
 				}
@@ -858,6 +882,8 @@ public class AnnotationsClass extends Service {
 
 	@PUT
 	@Path("annotationContexts/{annotationContextId}")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Update given AnnotationContext.")
 	@Notes("Requires authentication. JSON: {  "
 			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
@@ -898,6 +924,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Not specified annotationContextId!");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
 					return er;
 				}
@@ -907,6 +934,7 @@ public class AnnotationsClass extends Service {
 					result = "AnnotationContext is not found!";
 					// return
 					HttpResponse r = new HttpResponse(result);
+					r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					r.setStatus(404);
 					return r;
 				}
@@ -1024,6 +1052,7 @@ public class AnnotationsClass extends Service {
 
 	@DELETE
 	@Path("objects/{objectId}")
+	@Produces(MediaType.TEXT_PLAIN)
 	@Summary("Delete given object.")
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
@@ -1088,14 +1117,15 @@ public class AnnotationsClass extends Service {
 
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(401);
 				return r;
 			}
 
 		} catch (Exception e) {
 			// return HTTP Response on error
-			HttpResponse er = new HttpResponse("Internal error: "
-					+ e.getMessage());
+			HttpResponse er = new HttpResponse("Internal error: "+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1106,8 +1136,8 @@ public class AnnotationsClass extends Service {
 					Context.logError(this, e.getMessage());
 
 					// return HTTP Response on error
-					HttpResponse er = new HttpResponse("Internal error: "
-							+ e.getMessage());
+					HttpResponse er = new HttpResponse("Internal error: " + e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1124,6 +1154,7 @@ public class AnnotationsClass extends Service {
 
 	@DELETE
 	@Path("annotationContexts/{annotationContextId}")
+	@Produces(MediaType.TEXT_PLAIN)
 	@Summary("Delete given annotationContext.")
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
@@ -1219,6 +1250,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotations/{objectId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve annotations of a given object."
 			+ "")
 	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
@@ -1226,11 +1258,10 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 200, message = "Object annotations retrived successfully."),
 			@ApiResponse(code = 404, message = "Object id does not exist."),
 			@ApiResponse(code = 500, message = "Internal error."), })
-	public HttpResponse getObjectAnnotations(@PathParam("objectId") String objectId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
+	public HttpResponse getObjectAnnotations(@PathParam("objectId") String objectId, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
 		ArangoDriver conn = null;
 		JSONArray qs = new JSONArray();
 		try {
-			String objectHandle = "";
 			String objectCollection = "";
 			
 			JSONObject objectFromDB = null;
@@ -1245,21 +1276,18 @@ public class AnnotationsClass extends Service {
 			
 			conn = dbm.getConnection();
 
-			objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
-			objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
-			
-			objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
-			objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
-			
-			if (objectHandle.equals("")){
+			objectFromDB = getObjectJSON(objectId, objectCollection, graphName);			
+						
+			if (objectFromDB==null){
 				// return HTTP Response on Vertex not found
 				String result = "Object is not found!";
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(404);
 				return r;
 			}
-			
+						
 			String getAnnotations = "";
 			if (partsOfObject[0].equals("*")){
 				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedObject, {})  "
@@ -1340,6 +1368,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("objects/{objectId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve given object.")
 	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1365,6 +1394,7 @@ public class AnnotationsClass extends Service {
 				String result = "Object is not found!";
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(404);
 				return r;
 			} else {
@@ -1409,6 +1439,7 @@ public class AnnotationsClass extends Service {
 	
 	@GET
 	@Path("objects")
+	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = "Objects that can be annotated.")
 	@Summary("List objects.")
 	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
@@ -1416,7 +1447,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
 			@ApiResponse(code = 404, message = "No objects found."),
 			@ApiResponse(code = 500, message = "Internal error."), })
-	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "Videos" ) String collection) {
+	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
 		ArangoDriver conn = null;
 		try {
 			String objectCollection = "";
@@ -1437,6 +1468,7 @@ public class AnnotationsClass extends Service {
 				String result = "No objects found.";
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(404);
 				return r;
 			} else {
@@ -1480,6 +1512,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@GET
 	@Path("annotationContexts/{sourceId}/{destId}")
+	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve annotationContext information between a given object and a given annotation")
 	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
 	@ApiResponses(value = {
@@ -1505,6 +1538,7 @@ public class AnnotationsClass extends Service {
 				String result = "Objects not found!";
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(404);
 				return r;
 			}
@@ -1516,6 +1550,7 @@ public class AnnotationsClass extends Service {
 				String result = "No annotationContexts found!";
 				// return
 				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(404);
 				return r;
 			} else {
@@ -1556,6 +1591,7 @@ public class AnnotationsClass extends Service {
 	 */
 	@POST
 	@Path("import")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Summary("Import from AchSo! files")
 	@Notes("Requires authentication.")
 	@ApiResponses(value = {
