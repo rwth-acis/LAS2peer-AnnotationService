@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.arangodb.ArangoDriver;
@@ -59,7 +60,7 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1.1")
+@Version("0.1.2")
 @ApiInfo(title = "Annotations Service", 
 	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
 	termsOfServiceUrl = "", 
@@ -1359,6 +1360,120 @@ public class AnnotationsClass extends Service {
 
 	}
 	
+	/**
+	 * Method to retrieve all annotations containing (some of) the given keywords
+	 * 
+	 * @param q (list of) keywords
+	 * @param part part of the requested output
+	 * @param collection collection where the object is stored
+	 * @return JSONArray of objectId-neighbors together with AnnotationContext information
+	 */
+	@GET
+	@Path("annotations")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Summary("Retrieve annotations by keyword."
+			+ "")
+	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Annotations retrived successfully."),
+			@ApiResponse(code = 400, message = "No defined query."),
+			@ApiResponse(code = 404, message = "No Annotations found."),
+			@ApiResponse(code = 500, message = "Internal error."), })
+	public HttpResponse getAnnotationsByKeyword(@QueryParam(name = "q", defaultValue = "" ) String query, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
+		ArangoDriver conn = null;
+		JSONArray qs = new JSONArray();
+		try {
+
+			String getAnnotations = "";
+			//Object objectIdObj = new String("id");
+			
+			String[] partsOfObject = part.split(",");
+			String[] partsOfQuery = query.split(",");
+			
+			conn = dbm.getConnection();
+			String collectionPart = "";
+			if (collection.equals("")){
+				collectionPart = "{}";
+			}else{
+				collectionPart = "{vertexCollectionRestriction : '"+ collection +"'}";
+			}
+			
+			if (query.equals("")){
+				// return HTTP Response on Vertex not found
+				String result = "No query found!";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				r.setStatus(400);
+				return r;
+			}
+			
+			//construct filter
+			String filter = "";
+			for(String q:partsOfQuery){
+				if (filter.equals(""))
+					filter += " (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "'))";
+				else
+					filter += " AND (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "'))";
+			}
+
+			if (partsOfObject[0].equals("*")){
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ") FILTER " + filter 
+					+ " return i";
+			} else {
+				String selectParts = "{";
+				for(String p:partsOfObject )
+				{
+					String partSmall = "'" + p + "': i." + p + ",";
+					selectParts += partSmall;
+				}
+				//replace last character from ',' to '}'
+				selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+				
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ") FILTER " + filter 
+						+ " return " + selectParts;
+			}
+			
+			CursorEntity<JSONObject> resAnnotation = conn.executeQuery(getAnnotations, null, JSONObject.class, true, MAX_RECORDS);
+
+			//qs.add("objects that have AnnotationContext with " + objectId );
+			Iterator<JSONObject> iteratorAnnotation = resAnnotation.iterator();
+			while (iteratorAnnotation.hasNext()) {
+				JSONObject annotation = (JSONObject) iteratorAnnotation.next();
+				qs.add(annotation);
+			}
+			
+			//compose JSONObject
+			JSONObject results = new JSONObject();
+			results.put("annotations", qs);
+			// return HTTP Response on success
+			HttpResponse r = new HttpResponse(results.toJSONString());
+			r.setStatus(200);
+			return r;
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
 	/**
 	 * Method to retrieve a given object
 	 * 
