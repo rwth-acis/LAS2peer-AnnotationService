@@ -9,6 +9,7 @@ public class Annotation{
 	private String id;
 	private JSONObject annotationData;
 	private JSONObject author;
+	//private JSONObject annotation;
 	//private JSONObject position;
 	private String title;
 	private String text;
@@ -31,38 +32,18 @@ public class Annotation{
 	public Annotation(String id, JSONObject unstructuredAnnotationData, JSONObject author) {
 		this.id = id;
 		this.author = author;
+		annotationData = new JSONObject();
+		text = "";
+		title = "";
 		structureAnnotations(unstructuredAnnotationData);
 		
-	}
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	
-	public JSONObject getAnnotationData() {
-		return annotationData;
-	}
-
-	public void setAnnotationData(JSONObject annotationData) {
-		this.annotationData = annotationData;
 	}
 	
 	public JSONObject toJSON(){
 		JSONObject annotation = new JSONObject();
 		annotation.put("id", id);
 		annotation.put("author", author);
-		//annotation.put("position", position);
+		//annotation.put(POSITION.toString(), position);
 		annotation.put(TEXT.toString(), text);
 		annotation.put(TITLE.toString(), title);
 		//annotation.put("time", time);
@@ -79,16 +60,16 @@ public class Annotation{
 			position = structurePosition(unstructuredAnnotationData);
 		}*/
 		if (unstructuredAnnotationData.containsKey(TEXT)){
-			
-			text = structureText(unstructuredAnnotationData);
+			this.text = structureText(unstructuredAnnotationData) ;
+			//text = structureText(unstructuredAnnotationData);
 		}
 		/*if (unstructuredAnnotationData.containsKey(TIME)){
 			
 			time = structureTime(unstructuredAnnotationData);
 		}*/
 		if (unstructuredAnnotationData.containsKey(TITLE)){
-			
-			title = structureTitle(unstructuredAnnotationData);
+			this.title = structureTitle(unstructuredAnnotationData) ;
+			//title = structureTitle(unstructuredAnnotationData);
 		}
 		annotationData = unstructuredAnnotationData;
 	}
@@ -113,12 +94,11 @@ public class Annotation{
 	 * @return text as a String
 	 */
 	private String structureText(JSONObject unstructuredAnnotationData){
-		Object objectJson =  unstructuredAnnotationData.get(TEXT);
-		Gson g = new Gson();				
-		String object = g.toJson(objectJson);
-		unstructuredAnnotationData.remove(TEXT);
+		String objectJson =  (String) unstructuredAnnotationData.get(TEXT);
+
 		
-		return object;
+		unstructuredAnnotationData.remove(TEXT);		
+		return  objectJson;
 	}
 	
 	/**
@@ -127,12 +107,10 @@ public class Annotation{
 	 * @return time as a String
 	 */
 	private String structureTime(JSONObject unstructuredAnnotationData){
-		Object objectJson =  unstructuredAnnotationData.get(TIME);
-		Gson g = new Gson();				
-		String object = g.toJson(objectJson);
+		String objectJson =  (String) unstructuredAnnotationData.get(TIME);
 		unstructuredAnnotationData.remove(TIME);
 		
-		return object;
+		return objectJson;
 	}
 	
 	/**
@@ -141,12 +119,9 @@ public class Annotation{
 	 * @return title as a String
 	 */
 	private String structureTitle(JSONObject unstructuredAnnotationData){
-		Object objectJson =  unstructuredAnnotationData.get(TITLE);
-		Gson g = new Gson();				
-		String object = g.toJson(objectJson);
+		String objectJson =  (String) unstructuredAnnotationData.get(TITLE);
 		unstructuredAnnotationData.remove(TITLE);
-		
-		return object;
+		return objectJson;
 	}
 
 }
