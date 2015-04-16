@@ -13,12 +13,14 @@ public class Annotation{
 	//private JSONObject position;
 	private String title;
 	private String text;
+	private String keywords;
 	//private String time;
 	
 	private final static Object POSITION = new String("position");
 	private final static Object TITLE = new String("title");
 	private final static Object TIME = new String("time");
 	private final static Object TEXT = new String("text");
+	private final static Object KEYWORDS = new String("keywords");
 
 	/*public Annotation(String id, JSONObject annotationData, JSONObject author){
 			//, JSONObject position, String time) {
@@ -35,6 +37,7 @@ public class Annotation{
 		annotationData = new JSONObject();
 		text = "";
 		title = "";
+		keywords = "";
 		structureAnnotations(unstructuredAnnotationData);
 		
 	}
@@ -46,6 +49,7 @@ public class Annotation{
 		//annotation.put(POSITION.toString(), position);
 		annotation.put(TEXT.toString(), text);
 		annotation.put(TITLE.toString(), title);
+		annotation.put(KEYWORDS.toString(), keywords);
 		//annotation.put("time", time);
 		annotation.put("annotationData", annotationData);
 		return annotation;
@@ -69,6 +73,10 @@ public class Annotation{
 		}*/
 		if (unstructuredAnnotationData.containsKey(TITLE)){
 			this.title = structureTitle(unstructuredAnnotationData) ;
+			//title = structureTitle(unstructuredAnnotationData);
+		}
+		if (unstructuredAnnotationData.containsKey(KEYWORDS)){
+			this.keywords = structureKeywords(unstructuredAnnotationData) ;
 			//title = structureTitle(unstructuredAnnotationData);
 		}
 		annotationData = unstructuredAnnotationData;
@@ -101,6 +109,18 @@ public class Annotation{
 		return  objectJson;
 	}
 	
+	/**
+	 * Method to extract keywords information from the unstructured input
+	 * @param unstructuredAnnotationData
+	 * @return keywords as a String
+	 */
+	private String structureKeywords(JSONObject unstructuredAnnotationData){
+		String objectJson =  (String) unstructuredAnnotationData.get(KEYWORDS);
+
+		
+		unstructuredAnnotationData.remove(KEYWORDS);		
+		return  objectJson;
+	}
 	/**
 	 * Method to extract time information from the unstructured input
 	 * @param unstructuredAnnotationData
