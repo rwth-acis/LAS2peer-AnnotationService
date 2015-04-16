@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
@@ -593,6 +594,20 @@ public class AnnotationsClass extends Service {
 		}
 	}
 
+	@POST
+	@Path("annotationContexts")
+	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "AnnotationContext saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
+			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 409, message = "AnnotationContext already exists."),
+			@ApiResponse(code = 500, message = "Internal error.") })
+	public HttpResponse addNewAnnotationContextNull(@ContentParam String annotationContextData) {
+
+		return null;
+	}
+
 	/**
 	 * Add new annotationContext
 	 * @param annotationContextData Data for the annotationContext we want to store.
@@ -602,9 +617,9 @@ public class AnnotationsClass extends Service {
 	@Path("annotationContexts/{sourceId}/{destId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
+	//@ResourceListApi(description = " stores the relation data between an object and an annotations.")
 	@Summary("Create new annotationContext.")
-	@Notes("Requires authentication. JSON: {\"source\": \"10022\", \"dest\": \"10025\", "
+	@Notes("Requires authentication. JSON: { "
 			+ " \"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 			+ "\"time\": \"1.324\", \"duration\": \"0.40\" } .")
 	@ApiResponses(value = {
@@ -1405,29 +1420,30 @@ public class AnnotationsClass extends Service {
 				collectionPart = "{vertexCollectionRestriction : '"+ collection +"'}";
 			}
 			
+			String filter = "";
 			if (query.equals("")){
-				// return HTTP Response on Vertex not found
+				/*// return HTTP Response on Vertex not found
 				String result = "No query found!";
 				// return
 				HttpResponse r = new HttpResponse(result);
 				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 				r.setStatus(400);
-				return r;
-			}
+				return r;*/
+			}else{
 			
-			//construct filter
-			String filter = "";
-			for(String q:partsOfQuery){
-				if (filter.equals(""))
-					filter += " (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "')  OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
-				else
-					filter += " AND (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
-			}
+				//construct filter
 				
+				for(String q:partsOfQuery){
+					if (filter.equals(""))
+						filter += " FILTER (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "')  OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
+					else
+						filter += " AND (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
+				}
+			}	
 			selectParts = "{" + selectParts.substring(0, selectParts.length()-1) + "}";
 				
 			getAnnotations = " let l = (for i in GRAPH_VERTICES('AnnotationsGraph', null, {})  "
-					+ "FILTER " + filter + " "
+					+ filter + " "
 					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {direction : 'inbound'}) "
 					+ "return " + selectParts + " " 
 					+ " ) return unique(l)";
@@ -2460,8 +2476,8 @@ public class AnnotationsClass extends Service {
 		String parts[] = part.split(",");
 		
 		if (parts[0].equals("*")){
-			for(String p:parts){
-					String partSmall = "'" + p + "': " + item.get(p) + ",";
+			for(Entry<String, String> entry : item.entrySet()){
+					String partSmall = "'" + entry.getKey() + "': " + entry.getValue() + ",";
 					returnPart += partSmall;
 			}
 		}else{

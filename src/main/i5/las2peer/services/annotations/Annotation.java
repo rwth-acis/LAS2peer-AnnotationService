@@ -76,7 +76,7 @@ public class Annotation{
 			//title = structureTitle(unstructuredAnnotationData);
 		}
 		if (unstructuredAnnotationData.containsKey(KEYWORDS)){
-			this.keywords = structureTitle(unstructuredAnnotationData) ;
+			this.keywords = structureKeywords(unstructuredAnnotationData) ;
 			//title = structureTitle(unstructuredAnnotationData);
 		}
 		annotationData = unstructuredAnnotationData;
