@@ -32,12 +32,17 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
+import com.arangodb.entity.AqlFunctionsEntity;
 import com.arangodb.entity.CursorEntity;
 import com.arangodb.entity.DeletedEntity;
 import com.arangodb.entity.DocumentEntity;
@@ -60,7 +65,7 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1.2")
+@Version("0.1.3")
 @ApiInfo(title = "Annotations Service", 
 	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
 	termsOfServiceUrl = "", 
@@ -360,7 +365,6 @@ public class AnnotationsClass extends Service {
 						o.put("id",id);
 						
 						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, graphCollection, o, true);
-						
 						if(newObject.getCode() == SUCCESSFUL_INSERT && !newObject.isError()){
 							JSONObject newObj = newObject.getEntity();
 							// return
@@ -454,7 +458,7 @@ public class AnnotationsClass extends Service {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = "Annotations store details like title, text of an annotations.")
 	@Summary("Create new annotation.")
-	@Notes("Requires authentication. JSON format \"collection\": \"Annotations\",  ...Additional data ")
+	@Notes("Requires authentication. JSON format \"collection\": \"TextTypeAnnotations\",  ...Additional data ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotation saved successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
@@ -595,7 +599,7 @@ public class AnnotationsClass extends Service {
 	 * @return HttpResponse
 	 */
 	@POST
-	@Path("annotationContexts")
+	@Path("annotationContexts/{sourceId}/{destId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
@@ -609,7 +613,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 409, message = "AnnotationContext already exists."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse addNewAnnotationContext(@ContentParam String annotationContextData) {
+	public HttpResponse addNewAnnotationContext(@PathParam("sourceId") String source, @PathParam("destId") String dest, @ContentParam String annotationContextData) {
 
 		String result = "";
 		ArangoDriver conn = null;
@@ -633,8 +637,8 @@ public class AnnotationsClass extends Service {
 				Object annotationContextSourceObj = new String("source");
 				Object annotationContextDestObj = new String("dest");
 				
-				sourceId = getKeyFromJSON(annotationContextSourceObj, o, true);
-				destId = getKeyFromJSON(annotationContextDestObj, o, true);
+				sourceId = source;//getKeyFromJSON(annotationContextSourceObj, o, true);
+				destId = dest;//getKeyFromJSON(annotationContextDestObj, o, true);
 				
 				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
 				
@@ -774,8 +778,7 @@ public class AnnotationsClass extends Service {
 				String objectHandle = "";
 				String objectKeyDb = "";
 				
-				JSONObject objectFromDB = null;
-												
+				JSONObject objectFromDB = null;								
 				if ( !objectId.equals("") && ! graphName.equals("")){
 					objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
 					objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
@@ -998,7 +1001,6 @@ public class AnnotationsClass extends Service {
 				
 				
 				EdgeEntity<?> updatedAnnotationContext = conn.graphUpdateEdge(graphName, annotationContextCollection, annotationContextKeyDb, annotationContextFromDB, true);
-				
 				if ( updatedAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
 
 					// return
@@ -1383,12 +1385,17 @@ public class AnnotationsClass extends Service {
 		ArangoDriver conn = null;
 		JSONArray qs = new JSONArray();
 		try {
-
+			
 			String getAnnotations = "";
 			//Object objectIdObj = new String("id");
 			
 			String[] partsOfObject = part.split(",");
+			
+			
 			String[] partsOfQuery = query.split(",");
+			String selectParts = "";
+			
+			selectParts = composeSelectPartsForSearchByKeyword(part);
 			
 			conn = dbm.getConnection();
 			String collectionPart = "";
@@ -1412,44 +1419,43 @@ public class AnnotationsClass extends Service {
 			String filter = "";
 			for(String q:partsOfQuery){
 				if (filter.equals(""))
-					filter += " (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "'))";
+					filter += " (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "')  OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
 				else
-					filter += " AND (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "'))";
+					filter += " AND (CONTAINS(LOWER(i.title), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.text), '"+ q.toLowerCase() + "') OR CONTAINS(LOWER(i.keywords), '"+ q.toLowerCase() + "'))";
 			}
-
-			if (partsOfObject[0].equals("*")){
-				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ") FILTER " + filter 
-					+ " return i";
-			} else {
-				String selectParts = "{";
-				for(String p:partsOfObject )
-				{
-					String partSmall = "'" + p + "': i." + p + ",";
-					selectParts += partSmall;
-				}
-				//replace last character from ',' to '}'
-				selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
 				
-				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ") FILTER " + filter 
-						+ " return " + selectParts;
-			}
+			selectParts = "{" + selectParts.substring(0, selectParts.length()-1) + "}";
+				
+			getAnnotations = " let l = (for i in GRAPH_VERTICES('AnnotationsGraph', null, {})  "
+					+ "FILTER " + filter + " "
+					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {direction : 'inbound'}) "
+					+ "return " + selectParts + " " 
+					+ " ) return unique(l)";
 			
-			CursorEntity<JSONObject> resAnnotation = conn.executeQuery(getAnnotations, null, JSONObject.class, true, MAX_RECORDS);
+			CursorEntity<JSONArray> resAnnotation = conn.executeQuery(getAnnotations, null, JSONArray.class, true, MAX_RECORDS);
 
 			//qs.add("objects that have AnnotationContext with " + objectId );
-			Iterator<JSONObject> iteratorAnnotation = resAnnotation.iterator();
-			while (iteratorAnnotation.hasNext()) {
-				JSONObject annotation = (JSONObject) iteratorAnnotation.next();
-				qs.add(annotation);
+			Iterator<JSONArray> iteratorAnnotation = resAnnotation.iterator();
+			if (iteratorAnnotation.hasNext()) {
+				JSONArray annotation = (JSONArray) iteratorAnnotation.next();
+				
+				HttpResponse r = new HttpResponse(annotation.toJSONString());
+				r.setStatus(200);
+				return r;
+			}else{
+				String result = "No entries found";
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(404);
+				return r;
 			}
 			
 			//compose JSONObject
-			JSONObject results = new JSONObject();
+			/*JSONObject results = new JSONObject();
 			results.put("annotations", qs);
 			// return HTTP Response on success
 			HttpResponse r = new HttpResponse(results.toJSONString());
 			r.setStatus(200);
-			return r;
+			return r;*/
 
 		} catch (Exception e) {
 			// return HTTP Response on error
@@ -1474,6 +1480,7 @@ public class AnnotationsClass extends Service {
 		}
 
 	}
+	
 	/**
 	 * Method to retrieve a given object
 	 * 
@@ -1699,6 +1706,7 @@ public class AnnotationsClass extends Service {
 
 	}
 	
+		
 	/**
 	 * Import data from AchSo! files
 	 * @param annotationContextData Data for the annotationContext we want to store.
@@ -2391,6 +2399,82 @@ public class AnnotationsClass extends Service {
 		return id;
 	}
 	
+	/**
+	 * Method to compose string for search queries
+	 * @param part part that we want to select
+	 * @return composed string for the query
+	 */
+	private String composeSelectPartsForSearchByKeyword(String part){
+		String returnPart = "";
+		//Collection<Map<String,String>> maps = new HashSet<Map<String,String>>();
+		
+		HashMap<String, String> item = new HashMap<String, String>();
+		
+		item.put("objectCollection", "CONCAT(SPLIT(u.vertex._id, '/', 1),'')");
+		//maps.add(item);
+		
+		//item.clear();
+		item.put("objectId", "u.vertex.id");
+		//maps.add(item);
+		
+		//item.clear();
+		item.put("annotationPosition", "u.path.edges[0].position");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationTime", "u.path.edges[0].time");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationContextId", "u.path.edges[0].id");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationDuration", "u.path.edges[0].duration");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationCollection", "CONCAT(SPLIT(i._id, '/', 1),'')");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationId", "i.id");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationTitle", "i.title");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationText", "i.text");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationKeywords", "i.keywords");
+		//maps.add(item);
+
+		//item.clear();
+		item.put("annotationLocation", "i.annotationData.location");
+		//maps.add(item);
+
+		String parts[] = part.split(",");
+		
+		if (parts[0].equals("*")){
+			for(String p:parts){
+					String partSmall = "'" + p + "': " + item.get(p) + ",";
+					returnPart += partSmall;
+			}
+		}else{
+			for(String p:parts){
+				if(item.containsKey(p)){
+					String partSmall = "'" + p + "': " + item.get(p) + ",";
+					returnPart += partSmall;
+				}
+			}
+		}
+		
+		return returnPart;
+	}
 	// ================= Swagger Resource Listing & API Declarations
 	// =====================
 
