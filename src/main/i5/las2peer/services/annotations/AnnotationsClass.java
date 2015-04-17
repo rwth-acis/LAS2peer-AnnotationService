@@ -66,7 +66,7 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1.3")
+@Version("0.1.4")
 @ApiInfo(title = "Annotations Service", 
 	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
 	termsOfServiceUrl = "", 
@@ -89,6 +89,7 @@ public class AnnotationsClass extends Service {
 	private final static int SUCCESSFUL_INSERT = 201;
 	private final static int SUCCESSFUL_INSERT_ANNOTATIONCONTEXT = 202;
 	private final static String HANDLE = "_id";
+	private final static String COLLECTION = "collection";
 	
 	private final static Object ANNOTATION = new String("annotationData");
 	private final static Object POSITION = new String("position");
@@ -796,7 +797,8 @@ public class AnnotationsClass extends Service {
 				JSONObject objectFromDB = null;								
 				if ( !objectId.equals("") && ! graphName.equals("")){
 					objectFromDB = getObjectJSON(objectId, objectCollection, graphName);
-					objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
+					if (objectFromDB != null)
+						objectHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
 				} else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
@@ -807,13 +809,34 @@ public class AnnotationsClass extends Service {
 				}
 				
 				if (objectHandle.equals("")){
-					// return HTTP Response on vertex not found
-					result = "Object is not found!";
-					// return
-					HttpResponse r = new HttpResponse(result);
-					r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
-					r.setStatus(404);
-					return r;
+					
+					o.put("id",objectId);
+					objectCollection = getKeyFromJSON(new String(COLLECTION), o, true);
+					if (!objectCollection.equals("")){
+						
+						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, objectCollection, o, true);
+						if(newObject.getCode() == SUCCESSFUL_INSERT && !newObject.isError()){
+							JSONObject newObj = newObject.getEntity();
+							// return
+							HttpResponse r = new HttpResponse(newObj.toJSONString());
+							r.setStatus(200);
+							return r;
+						}else{
+							result = "Object could not be added!";
+							// return
+							HttpResponse r = new HttpResponse(result);
+							r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+							r.setStatus(404);
+							return r;
+						}
+					}else{
+						result = "\"Collection\" is not definded.";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+						r.setStatus(400);
+						return r;
+					}
 				}
 				
 				//update the JSON according the new input data
