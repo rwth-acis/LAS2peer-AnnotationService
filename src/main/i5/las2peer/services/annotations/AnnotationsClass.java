@@ -1564,7 +1564,7 @@ public class AnnotationsClass extends Service {
 			}	
 			selectParts = "{" + selectParts.substring(0, selectParts.length()-1) + "}";
 				
-			getAnnotations = " let l = (for i in GRAPH_VERTICES('AnnotationsGraph', null, {})  "
+			getAnnotations = " let l = (for i in GRAPH_VERTICES('AnnotationsGraph', null, "+ collectionPart + ")  "
 					+ filter + " "
 					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {direction : 'inbound'}) "
 					+ "return " + selectParts + " " 
