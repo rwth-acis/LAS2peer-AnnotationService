@@ -15,7 +15,7 @@
 		<dependency org="org.apache.commons" name="commons-pool2" rev="2.2"/>
 		<dependency org="org.apache.commons" name="commons-dbcp2" rev="2.0"/>
 		
-		<dependency org="com.arangodb" name="arangodb-java-driver" rev="2.4"/>
+		<dependency org="com.arangodb" name="arangodb-java-driver" rev="2.5.3"/>
 		
 		<dependency org="com.google.code.gson" name="gson" rev="2.2.4"/>
 		
