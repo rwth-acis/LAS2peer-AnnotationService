@@ -143,5 +143,13 @@ public class Annotation{
 		unstructuredAnnotationData.remove(TITLE);
 		return objectJson;
 	}
+	
+	/**
+	 * Get Id of the annotation
+	 * @return id String id
+	 */
+	public String getId() {
+		return id;
+	}
 
 }

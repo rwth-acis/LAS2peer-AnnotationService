@@ -66,7 +66,7 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1.4")
+@Version("0.1.5")
 @ApiInfo(title = "Annotations Service", 
 	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
 	termsOfServiceUrl = "", 
@@ -489,6 +489,7 @@ public class AnnotationsClass extends Service {
 				String id = "";
 
 				Object graphCollectionObj = new String("collection");
+				Object objectIdObj = new String("objectId");
 				
 				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
 				
@@ -500,16 +501,40 @@ public class AnnotationsClass extends Service {
 						JSONObject author = getAuthorInformation();
 						//o.put(AUTHOR.toString(), author);
 						
+						String objectId = getKeyFromJSON(objectIdObj, o, true);
+						
+						if (objectId.equals("")){
+							// return HTTP Response on error
+							HttpResponse er = new HttpResponse("Internal error: "
+									+ "Missing JSON object member with key "
+									+ "\"" + objectIdObj.toString() + "\""
+									+ "");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+							er.setStatus(400);
+							return er;
+						}
+						
 						
 						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o, author), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
+							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId());
 							
-							JSONObject newObj = newAnnotation.getEntity().toJSON();
-							// return
-							HttpResponse r = new HttpResponse(newObj.toJSONString());
-							r.setStatus(200);
-							return r;
+							if (emptyAnnotationContext != null){
+								JSONObject newObj = newAnnotation.getEntity().toJSON();
+								newObj.put("annotationContextId", emptyAnnotationContext.get(new String("annotationContextId")));
+								// return
+								HttpResponse r = new HttpResponse(newObj.toJSONString());
+								r.setStatus(200);
+								return r;
+							}else{
+								// return HTTP Response on error
+								String response = "Could not create an AnnotationContext.";
+								HttpResponse er = new HttpResponse("Internal error: " + response +".");
+								er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+								er.setStatus(500);
+								return er;
+							}
 						}else{
 							// return HTTP Response on error
 							String response = newAnnotation.getErrorNumber() + ", " + newAnnotation.getErrorMessage();
@@ -754,6 +779,74 @@ public class AnnotationsClass extends Service {
 			}
 		}
 	}
+	
+	private JSONObject addNewAnnotatoinContextEmpty(String source, String destination){
+		
+		String sourceHandle = "";
+		String destHandle = "";
+		JSONObject o;
+		ArangoDriver conn = null;
+		String id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+		
+		if ( !source.equals("") && !destination.equals("") ){
+			sourceHandle = getObjectHandle(source, "", graphName);
+			//get destination handle
+			destHandle = getObjectHandle(destination, "", graphName);
+			
+		}else{ 
+			//TODO: throw exception
+			return null;
+		}
+		
+		//insert the new AnnotationContext
+		if (getAnnotationContextHandle(id, annotationContextCollection, graphName).equals("")){
+			
+			
+			o = new JSONObject();
+			//Insert author information
+			JSONObject author = getAuthorInformation();
+			o.put(AUTHOR.toString(), author);
+			
+			//Insert id information
+			o.put("id", id);
+			
+			//Insert AnnotationContext
+			try {
+				conn = dbm.getConnection();
+			} catch (SQLException e1) {				
+				e1.printStackTrace();
+				return null;
+			}
+			EdgeEntity<?> newAnnotationContext;
+			try {
+				newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, null, sourceHandle, destHandle, o, null);
+			} catch (ArangoException e) {
+				e.printStackTrace();
+				return null;
+				
+			}
+		
+			if (newAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
+				JSONObject newAnnotContextData = getAnnotationContextJSONByHandle(
+						(String) ((JSONObject) newAnnotationContext.getEntity()).get(new String(HANDLE)), 
+						annotationContextCollection, graphName);
+				String annotationContextId = (String) newAnnotContextData.get(new String("id"));
+				
+				JSONObject annotationContextJSON = new JSONObject();
+				annotationContextJSON.put("annotationContextId", annotationContextId);
+				
+				// return
+				return annotationContextJSON;
+				
+			}else{
+				// return
+				return null;
+			}
+		}else{
+			// return 
+			return null;
+		}
+	}
 
 
 	/**
@@ -936,7 +1029,7 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 401, message = "User is not authenticated."),
 			@ApiResponse(code = 404, message = "AnnotationContext not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
-	public HttpResponse updateAnnotationContext(	@PathParam("annotationContextId") String annotationContextId, @ContentParam String annotationContextData) {
+	public HttpResponse updateAnnotationContext(@PathParam("annotationContextId") String annotationContextId, @ContentParam String annotationContextData) {
 
 		String result = "";
 		ArangoDriver conn = null;
@@ -987,7 +1080,9 @@ public class AnnotationsClass extends Service {
 					{
 						annotationContextFromDB.remove(key);
 						annotationContextFromDB.put((String)key,  o.get(key));
-					}else if (annotationContextFromDB.containsKey(ANNOTATION)){
+						continue;
+					}
+					if (annotationContextFromDB.containsKey(ANNOTATION)){
 						Object annotationContextDatas = annotationContextFromDB.get(ANNOTATION);
 						Gson gs = new Gson();				
 						String annotationContext = gs.toJson(annotationContextDatas);
@@ -999,9 +1094,11 @@ public class AnnotationsClass extends Service {
 							annotationDataContextJSON.put((String)key,  o.get(key));
 							annotationContextFromDB.remove(ANNOTATION);
 							annotationContextFromDB.put((String)ANNOTATION, annotationDataContextJSON);
+							continue;
 						}
 						
-					}else if (annotationContextFromDB.containsKey(POSITION)){
+					}
+					if (annotationContextFromDB.containsKey(POSITION)){
 						Object annotationContextDatas = annotationContextFromDB.get(POSITION);
 						Gson gs = new Gson();				
 						String annotationContext = gs.toJson(annotationContextDatas);
@@ -1013,6 +1110,7 @@ public class AnnotationsClass extends Service {
 							annotationDataContextJSON.put((String)key,  o.get(key));
 							annotationContextFromDB.remove(POSITION);
 							annotationContextFromDB.put((String)POSITION, annotationDataContextJSON);
+							continue;
 						}
 						
 					}/*else if (annotationContextFromDB.containsKey(AUTHOR)){
@@ -1030,8 +1128,9 @@ public class AnnotationsClass extends Service {
 						}
 						
 					}*/
-					else
-						annotationContextFromDB.put((String)key,  o.get(key));
+					
+					//no changes made till now
+					annotationContextFromDB.put((String)key,  o.get(key));
 				}
 				
 				String [] annotationContextHandleSplit = annotationContextHandle.split("/"); 
