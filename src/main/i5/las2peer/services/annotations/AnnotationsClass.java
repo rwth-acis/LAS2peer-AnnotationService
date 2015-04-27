@@ -43,6 +43,7 @@ import java.util.Map.Entry;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
+import com.arangodb.CursorResultSet;
 import com.arangodb.entity.AqlFunctionsEntity;
 import com.arangodb.entity.CursorEntity;
 import com.arangodb.entity.DeletedEntity;
@@ -99,6 +100,7 @@ public class AnnotationsClass extends Service {
 	
 	private final static String SERVICE = "Annotations";
 	
+	//depricated but still needs to be as a query parameter
 	private final static int MAX_RECORDS = 100;
 	
 	private String epUrl;
@@ -684,15 +686,6 @@ public class AnnotationsClass extends Service {
 				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
 				
 				if ( !sourceId.equals("") && !destId.equals("") ){
-					//get source handle
-					/*Map<String, Object> soruceObjectMap = new MapBuilder().put("id",sourceId).get();
-					String getSourceObjectByID = "for i in GRAPH_VERTICES('"+ graphName +"', @id,{}) return i._id";
-					Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceObjectMap).get();
-					CursorEntity<String> resSourceById = conn.executeQuery(	getSourceObjectByID, bindVarsSource, String.class, true, 1);
-					Iterator<String> iteratorSource = resSourceById.iterator();
-					if (iteratorSource.hasNext()){
-						sourceHandle=iteratorSource.next();
-					}*/
 					
 					sourceHandle = getObjectHandle(sourceId, "", graphName);
 					//get destination handle
@@ -1454,14 +1447,12 @@ public class AnnotationsClass extends Service {
 			}
 			Map<String, Object> bindVars = new MapBuilder().put("selectedObject", objectFromDB).get();
 
-			CursorEntity<JSONObject> resAnnotation = conn.executeQuery(getAnnotations, bindVars, JSONObject.class, true, MAX_RECORDS);
-
+			CursorResultSet<JSONObject> rs = conn.executeQueryWithResultSet(getAnnotations, bindVars, JSONObject.class, true, 0);
 			//qs.add("objects that have AnnotationContext with " + objectId );
-			Iterator<JSONObject> iteratorAnnotation = resAnnotation.iterator();
-			while (iteratorAnnotation.hasNext()) {
-				JSONObject annotation = (JSONObject) iteratorAnnotation.next();
-				qs.add(annotation);
+			for (JSONObject obj : rs) {
+				qs.add(obj);
 			}
+			
 			JSONArray modification = modifyJSON(qs);
 			
 			//compose JSONObject
@@ -1570,10 +1561,9 @@ public class AnnotationsClass extends Service {
 					+ "return " + selectParts + " " 
 					+ " ) return unique(l)";
 			
-			CursorEntity<JSONArray> resAnnotation = conn.executeQuery(getAnnotations, null, JSONArray.class, true, MAX_RECORDS);
-
+			CursorResultSet<JSONArray> rs = conn.executeQueryWithResultSet(getAnnotations, null, JSONArray.class, true, MAX_RECORDS);
 			//qs.add("objects that have AnnotationContext with " + objectId );
-			Iterator<JSONArray> iteratorAnnotation = resAnnotation.iterator();
+			Iterator<JSONArray> iteratorAnnotation = rs.iterator();
 			if (iteratorAnnotation.hasNext()) {
 				JSONArray annotation = (JSONArray) iteratorAnnotation.next();
 				
@@ -2031,14 +2021,15 @@ public class AnnotationsClass extends Service {
 		}
 		
 		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceObjectMap).get();
-		CursorEntity<String> resSourceById = null;
+		//CursorEntity<String> resSourceById = null;
+		CursorResultSet<String> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceObjectByID, null, String.class, true, 1);
+			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, String.class, true, 1, false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<String> iteratorSource = resSourceById.iterator();
+		Iterator<String> iteratorSource = rs.iterator();
 		if (iteratorSource.hasNext()){
 			objectHandle = iteratorSource.next();
 		}
@@ -2076,14 +2067,15 @@ public class AnnotationsClass extends Service {
 		}
 		
 		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceObjectMap).get();
-		CursorEntity<JSONObject> resSourceById = null;
+		//CursorEntity<JSONObject> resSourceById = null;
+		CursorResultSet<JSONObject> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceObjectByID, null, JSONObject.class, true, 1);
+			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, JSONObject.class, true, 1, false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		Iterator<JSONObject> iteratorSource = rs.iterator();
 		if (iteratorSource.hasNext()){
 			object = iteratorSource.next();
 		}
@@ -2137,15 +2129,14 @@ public class AnnotationsClass extends Service {
 			getSourceObjectByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{vertexCollectionRestriction : '"+ objectCollection +"'}) FILTER i.id == '"+ objectId + "' " + returnStatement;
 		}
 		
-		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceObjectMap).get();
-		CursorEntity<JSONObject> resSourceById = null;
+		CursorResultSet<JSONObject> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceObjectByID, null, JSONObject.class, true, 1);
+			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, JSONObject.class, true, 1, false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		Iterator<JSONObject> iteratorSource = rs.iterator();
 		if (iteratorSource.hasNext()){
 			object = iteratorSource.next();
 		}
@@ -2174,10 +2165,6 @@ public class AnnotationsClass extends Service {
 			e.printStackTrace();
 		}
 		
-		//get object handle
-		//Map<String, Object> soruceObjectMap = new MapBuilder().put("id",objectId).get();
-		
-		//return modification
 		String selectParts = "";
 		if ( part.equals("*") ||  part.equals("")){
 			returnStatement = " return i";
@@ -2200,17 +2187,16 @@ public class AnnotationsClass extends Service {
 			getSourceObjectByID = "for i in GRAPH_VERTICES('"+ graphName +"', null,{vertexCollectionRestriction : '"+ objectCollection +"'})  " + returnStatement;
 		}
 		
-		CursorEntity<JSONObject> resSourceById = null;
+		CursorResultSet<JSONObject> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceObjectByID, null, JSONObject.class, true, MAX_RECORDS);
+			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, JSONObject.class, true, MAX_RECORDS);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
-		while (iteratorSource.hasNext()){
-			object = iteratorSource.next();
-			objectsJSON.add(object);
+		
+		for (JSONObject obj : rs) {
+			objectsJSON.add(obj);
 		}
 		return objectsJSON;
 	}
@@ -2242,15 +2228,14 @@ public class AnnotationsClass extends Service {
 			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i._id";
 		}
 		
-		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceannotationContextMap).get();
-		CursorEntity<String> resSourceById = null;
+		CursorResultSet<String> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceAnnotationContextByID, null, String.class, true, 1);
+			 rs = conn.executeQueryWithResultSet(getSourceAnnotationContextByID, null, String.class, true, 1,false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<String> iteratorSource = resSourceById.iterator();
+		Iterator<String> iteratorSource = rs.iterator();
 		if (iteratorSource.hasNext()){
 			annotationContextHandle = iteratorSource.next();
 		}
@@ -2284,15 +2269,14 @@ public class AnnotationsClass extends Service {
 			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i";
 		}
 		
-		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceannotationContextMap).get();
-		CursorEntity<JSONObject> resSourceById = null;
+		CursorResultSet<JSONObject> rs = null;
 		try {
-			resSourceById = conn.executeQuery(	getSourceAnnotationContextByID, null, JSONObject.class, true, 1);
+			rs = conn.executeQueryWithResultSet(getSourceAnnotationContextByID, null, JSONObject.class, true, 1, false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Iterator<JSONObject> iteratorSource = resSourceById.iterator();
+		Iterator<JSONObject> iteratorSource = rs.iterator();
 		if (iteratorSource.hasNext()){
 			annotationContext = iteratorSource.next();
 		}
@@ -2319,15 +2303,14 @@ public class AnnotationsClass extends Service {
 		}
 		
 		//get annotationContext handle
-		//Map<String, Object> soruceannotationContextMap = new MapBuilder().put("id",annotationContextId).get();		
 		if ( annotationContextCollection.equals("")){
 			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._id == '"+ annotationContextHandle +"' return i";
 		} else {
 			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
 		}
 		
-		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceannotationContextMap).get();
 		CursorEntity<JSONObject> resSourceById = null;
+		CursorResultSet<JSONObject> rs = null;
 		try {
 			resSourceById = conn.executeQuery(	getSourceAnnotationContextByID, null, JSONObject.class, true, 1);
 		} catch (ArangoException e) {
