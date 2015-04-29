@@ -32,19 +32,14 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
 import com.arangodb.CursorResultSet;
-import com.arangodb.entity.AqlFunctionsEntity;
 import com.arangodb.entity.CursorEntity;
 import com.arangodb.entity.DeletedEntity;
 import com.arangodb.entity.DocumentEntity;
@@ -1382,7 +1377,7 @@ public class AnnotationsClass extends Service {
 	 * @return JSONArray of objectId-neighbors together with AnnotationContext information
 	 */
 	@GET
-	@Path("annotations/{objectId}")
+	@Path("objects/{objectId}/annotations")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve annotations of a given object."
 			+ "")
@@ -1555,7 +1550,7 @@ public class AnnotationsClass extends Service {
 			}	
 			selectParts = "{" + selectParts.substring(0, selectParts.length()-1) + "}";
 				
-			getAnnotations = " let l = (for i in GRAPH_VERTICES('AnnotationsGraph', null, "+ collectionPart + ")  "
+			getAnnotations = " let l = (for i in GRAPH_VERTICES('" + graphName + "', null, "+ collectionPart + ")  "
 					+ filter + " "
 					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {direction : 'inbound'}) "
 					+ "return " + selectParts + " " 
