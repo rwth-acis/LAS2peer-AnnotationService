@@ -2482,6 +2482,9 @@ public class AnnotationsClass extends Service {
 			}
 			
 		}
+		//add the last object
+		modifiy.add(newJSONObject);
+		
 		return modifiy;
 	}
 	
