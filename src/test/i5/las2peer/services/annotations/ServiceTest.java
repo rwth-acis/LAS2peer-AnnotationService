@@ -36,7 +36,7 @@ import org.junit.Test;
 public class ServiceTest {
 	
 	private static final String HTTP_ADDRESS = "http://127.0.0.1";
-    private static final int HTTP_PORT = 8083;//WebConnector.DEFAULT_HTTP_PORT;
+    private static final int HTTP_PORT = WebConnector.DEFAULT_HTTP_PORT;
 	
 	private static LocalNode node;
 	private static WebConnector connector;
@@ -48,6 +48,11 @@ public class ServiceTest {
 	private static final String testServiceClass = "i5.las2peer.services.annotations.AnnotationsClass";
 	
 	private static final String mainPath = "annotations/";
+	
+	private static final String objectCollection = "Videos";
+	private static final String objectCollectionSecond = "Images";
+	private static final String annotationCollection = "TextTypeAnnotation";
+	private static final String annotationCollectionSecond = "LocationTypeAnnotation";
 	
 	/**
 	 * Called before the tests start.
@@ -131,10 +136,10 @@ public class ServiceTest {
 	}
 	
 	/**
-	 * Tests the AnnotationService for adding new nodes (for Videos)
+	 * Tests the AnnotationService for adding new nodes (for objects)
 	 */
 	@Test
-	public void testCreateVideoNode()
+	public void testCreateObjectNode()
 	{
 		//AnnotationsClass cl = new AnnotationsClass();
 		MiniClient c = new MiniClient();
@@ -144,11 +149,11 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
-			//add a new video
-            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
+			//add a new object
+            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, result.getHttpCode());
             assertTrue(result.getResponse().trim().contains("id")); 
-			System.out.println("Result of 'testCreateVideoNode': " + result.getResponse());
+			System.out.println("Result of 'testCreateObjectNode': " + result.getResponse());
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(result.getResponse());
 			} catch (ParseException e1) {
@@ -156,30 +161,30 @@ public class ServiceTest {
 			}
 			String id = (String) o.get(new String("id"));
 			
-			//check if video exists -> should pass
-			//retrieve the video information
+			//check if object exists -> should pass
+			//retrieve the object information
 			ClientResponse select=c.sendRequest("GET", mainPath +"objects/" + id + "?part=id", ""); 
             assertEquals(200, select.getHttpCode());
             assertTrue(select.getResponse().trim().contains(id)); 
-			System.out.println("Result of 'Select in testCreateVideoNode': " + select.getResponse().trim());
+			System.out.println("Result of select in 'testCreateObjectNode': " + select.getResponse().trim());
 			
-			//add same video -> should fail with corresponding message
-			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\" }"); 
+			//add same object -> should fail with corresponding message
+			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\" }"); 
             assertEquals(409, insertAgain.getHttpCode());
             assertTrue(insertAgain.getResponse().trim().contains("already")); 
-			System.out.println("Result of try insert again 'testCreateVideoNode': " + insertAgain.getResponse().trim());*/
+			System.out.println("Result of try insert again 'testCreateObjectNode': " + insertAgain.getResponse().trim());*/
 			
-			//delete video
+			//delete object
 			ClientResponse delete=c.sendRequest("DELETE", mainPath +"objects/" + id + "", ""); 
             assertEquals(200, delete.getHttpCode());
             assertTrue(delete.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + delete.getResponse().trim());
+            System.out.println("Result of delete in 'testCreateObjectNode': " + delete.getResponse().trim());
             
-            //check if video exists -> should fail
+            //check if object exists -> should fail
 			ClientResponse selectAfterDelete=c.sendRequest("GET", mainPath +"objects/" + id + "?part=id", ""); 
             assertEquals(404, selectAfterDelete.getHttpCode());
             assertTrue(selectAfterDelete.getResponse().trim().contains("not")); 
-			System.out.println("Result of select after delete in 'testCreateVideoNode': " + selectAfterDelete.getResponse().trim());
+			System.out.println("Result of select after delete in 'testCreateObjectNode': " + selectAfterDelete.getResponse().trim());
 		}
 		catch(Exception e)
 		{
@@ -203,20 +208,20 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
-			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
-            assertEquals(200, addVideo.getHttpCode());
-            assertTrue(addVideo.getResponse().trim().contains("id")); 
-			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
+			//add a new object
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            assertEquals(200, addObjectCollection.getHttpCode());
+            assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
+			System.out.println("Result of 'testCreateAnnotationNode': " + addObjectCollection.getResponse());
 			try{	
-				object = (JSONObject) JSONValue.parseWithException(addVideo.getResponse());
+				object = (JSONObject) JSONValue.parseWithException(addObjectCollection.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			String objectId = (String) object.get(new String("id"));
 				
 			//add a new annotation
-			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"TextTypeAnnotation\","
+			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", \"objectId\": " + "\"" + objectId + "\"" + ","
 					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{}); 
 	        assertEquals(200, result.getHttpCode());
@@ -237,7 +242,7 @@ public class ServiceTest {
 			System.out.println("Result of select in 'testCreateAnnotationNode': " + select.getResponse().trim());
 			
 			//add same annotation
-			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"TextTypeAnnotation\", 
+			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\", 
 			 * \"Title\": \"Annotation Insert Test\" , \"Location\": \"Microservice Test Class\"}"); 
 	        assertEquals(409, insertAgain.getHttpCode());
 	        assertTrue(insertAgain.getResponse().trim().contains("already")); 
@@ -247,7 +252,7 @@ public class ServiceTest {
 			ClientResponse delete=c.sendRequest("DELETE", mainPath +"objects/" + id +"", ""); 
             assertEquals(200, delete.getHttpCode());
             assertTrue(delete.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + delete.getResponse().trim());
+            System.out.println("Result of delete in 'testCreateAnnotationNode': " + delete.getResponse().trim());
 			
 			//check if annotation exists
             ClientResponse selectAgain=c.sendRequest("GET", mainPath +"objects/" + id +"?part=id,title", ""); 
@@ -255,11 +260,11 @@ public class ServiceTest {
             assertTrue(selectAgain.getResponse().trim().contains("not")); 
 			System.out.println("Result of select again in 'testCreateAnnotationNode': " + selectAgain.getResponse().trim());
 		
-			//delete video
-			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"objects/" + objectId +"", ""); 
-            assertEquals(200, deleteVideo.getHttpCode());
-            assertTrue(deleteVideo.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + deleteVideo.getResponse().trim());
+			//delete object
+			ClientResponse deleteObjectCollection=c.sendRequest("DELETE", mainPath +"objects/" + objectId +"", ""); 
+            assertEquals(200, deleteObjectCollection.getHttpCode());
+            assertTrue(deleteObjectCollection.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testCreateAnnotationNode': " + deleteObjectCollection.getResponse().trim());
 		}
 		catch(Exception e)
 		{
@@ -269,10 +274,10 @@ public class ServiceTest {
 	}
 	
 	/**
-	 *  Tests adding an annotation to a video (by creating the corresponding annotationContext)
+	 *  Tests adding an annotation to an object (by creating the corresponding annotationContext)
 	 */
 	@Test
-	public void testAddAnnotationToVideo()
+	public void testAddAnnotationToObject()
 	{
 		//AnnotationsClass cl = new AnnotationsClass();
 		MiniClient c = new MiniClient();
@@ -284,32 +289,32 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
-			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
-            assertEquals(200, addVideo.getHttpCode());
-            assertTrue(addVideo.getResponse().trim().contains("id")); 
-			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
+			//add a new object
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            assertEquals(200, addObjectCollection.getHttpCode());
+            assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
+			System.out.println("Result of 'testAddAnnotationToObject': " + addObjectCollection.getResponse());
 			try{	
-				object = (JSONObject) JSONValue.parseWithException(addVideo.getResponse());
+				object = (JSONObject) JSONValue.parseWithException(addObjectCollection.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			String objectId = (String) object.get(new String("id"));
 			
-			//check if video exists -> should pass
-			//retrieve the video information
-			ClientResponse selectVideo=c.sendRequest("GET", mainPath +"objects/" + objectId + "?part=id", ""); 
-            assertEquals(200, selectVideo.getHttpCode());
-            assertTrue(selectVideo.getResponse().trim().contains(objectId)); 
-			System.out.println("Result of get video @ 'testAddAnnotationToVideo': " + selectVideo.getResponse().trim());
+			//check if object exists -> should pass
+			//retrieve the object information
+			ClientResponse selectObject=c.sendRequest("GET", mainPath +"objects/" + objectId + "?part=id", ""); 
+            assertEquals(200, selectObject.getHttpCode());
+            assertTrue(selectObject.getResponse().trim().contains(objectId)); 
+			System.out.println("Result of get object @ 'testAddAnnotationToObject': " + selectObject.getResponse().trim());
 			
-			//create a new annotation for the video
-			ClientResponse addAnnotation=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"TextTypeAnnotation\","
+			//create a new annotation for the object
+			ClientResponse addAnnotation=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", \"objectId\": " + "\"" + objectId + "\"" + ","
 					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
-			System.out.println("Result of insert 'testCreateAnnotationNode': " + addAnnotation.getResponse().trim());
+			System.out.println("Result of insert 'testAddAnnotationToObject': " + addAnnotation.getResponse().trim());
 			try{	
 				annotation = (JSONObject) JSONValue.parseWithException(addAnnotation.getResponse());
 			} catch (ParseException e1) {
@@ -322,7 +327,7 @@ public class ServiceTest {
 			ClientResponse selectAnnotation=c.sendRequest("GET", mainPath +"objects/" + annotationId + "?part=id,title", ""); 
             assertEquals(200, selectAnnotation.getHttpCode());
             assertTrue(selectAnnotation.getResponse().trim().contains(annotationId)); 
-			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotation.getResponse().trim());
+			System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotation.getResponse().trim());
 			
 			//add new annotationContext
 			ClientResponse updateAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContexts/" + annotationContextId + "", "{ "
@@ -330,7 +335,7 @@ public class ServiceTest {
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, updateAnnotationContext.getHttpCode());
 	        assertTrue(updateAnnotationContext.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + updateAnnotationContext.getResponse().trim());
+			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToObject': " + updateAnnotationContext.getResponse().trim());
 			try{	
 				annotationContext = (JSONObject) JSONValue.parseWithException(updateAnnotationContext.getResponse());
 			} catch (ParseException e1) {
@@ -342,17 +347,17 @@ public class ServiceTest {
 			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id&collection=Annotated", ""); 
             assertEquals(200, selectAnnotationContext.getHttpCode());
             assertTrue(selectAnnotationContext.getResponse().trim().contains(annotationContextId)); 
-			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContext.getResponse().trim());
+			System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotationContext.getResponse().trim());
 			
 			//create a new annotationContext (with the same information)
-			ClientResponse addAnnotationContextAgain=c.sendRequest("POST", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "", "{ "
+			ClientResponse addSecondTypeAnnotationContextAgain=c.sendRequest("POST", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "", "{ "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
-	        assertEquals(200, addAnnotationContextAgain.getHttpCode());
-	        assertTrue(addAnnotationContextAgain.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertannotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContextAgain.getResponse().trim());
+	        assertEquals(200, addSecondTypeAnnotationContextAgain.getHttpCode());
+	        assertTrue(addSecondTypeAnnotationContextAgain.getResponse().trim().contains("id")); 
+			System.out.println("Result of insertannotationContext @ 'testAddAnnotationToObject': " + addSecondTypeAnnotationContextAgain.getResponse().trim());
 			try{	
-				annotationContext = (JSONObject) JSONValue.parseWithException(addAnnotationContextAgain.getResponse());
+				annotationContext = (JSONObject) JSONValue.parseWithException(addSecondTypeAnnotationContextAgain.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
@@ -363,34 +368,34 @@ public class ServiceTest {
 			ClientResponse selectAnnotationContextAgain=c.sendRequest("GET", mainPath +"annotationContexts/"
 			+ objectId + "/" + annotationId + "?part=id,position&collection=Annotated", ""); 
             assertEquals(200, selectAnnotationContextAgain.getHttpCode());
-            System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContextAgain.getResponse());
+            System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotationContextAgain.getResponse());
             assertTrue(selectAnnotationContextAgain.getResponse().trim().contains(annotationContextId));
             assertTrue(selectAnnotationContextAgain.getResponse().trim().contains(annotationContextId2));
-			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContextAgain.getResponse().trim());
+			System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotationContextAgain.getResponse().trim());
 			
 			//delete all annotationContexts 
 			ClientResponse deleteAnnotationContext=c.sendRequest("DELETE", mainPath +"annotationContexts/" + annotationContextId + "", ""); 
             assertEquals(200, deleteAnnotationContext.getHttpCode());
             assertTrue(deleteAnnotationContext.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + deleteAnnotationContext.getResponse().trim());
+            System.out.println("Result of delete in 'testAddAnnotationToObject': " + deleteAnnotationContext.getResponse().trim());
             
             ClientResponse deleteAnnotationContext2=c.sendRequest("DELETE", mainPath +"annotationContexts/" + annotationContextId2 + "", ""); 
             assertEquals(200, deleteAnnotationContext2.getHttpCode());
             assertTrue(deleteAnnotationContext2.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + deleteAnnotationContext2.getResponse().trim());
+            System.out.println("Result of delete in 'testAddAnnotationToObject': " + deleteAnnotationContext2.getResponse().trim());
 			//check if any annotationContext still exists
 			
 			//delete annotation
 			ClientResponse deleteAnnotation=c.sendRequest("DELETE", mainPath +"objects/" + annotationId + "", ""); 
             assertEquals(200, deleteAnnotation.getHttpCode());
             assertTrue(deleteAnnotation.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete annotation in 'testCreateVideoNode': " + deleteAnnotation.getResponse().trim());
+            System.out.println("Result of delete annotation in 'testAddAnnotationToObject': " + deleteAnnotation.getResponse().trim());
 			
-            //delete video
-			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"objects/" + objectId + "", ""); 
-            assertEquals(200, deleteVideo.getHttpCode());
-            assertTrue(deleteVideo.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete video @ 'testAddAnnotationToVideo': " + deleteVideo.getResponse().trim());
+            //delete object
+			ClientResponse deleteObjectCollection=c.sendRequest("DELETE", mainPath +"objects/" + objectId + "", ""); 
+            assertEquals(200, deleteObjectCollection.getHttpCode());
+            assertTrue(deleteObjectCollection.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete object @ 'testAddAnnotationToObject': " + deleteObjectCollection.getResponse().trim());
 		}
 		catch(Exception e)
 		{
@@ -401,10 +406,10 @@ public class ServiceTest {
 	}
 	
 	/**
-	 *  Tests adding an annotation to a video (by creating the corresponding annotationContext)
+	 *  Tests adding an annotation to an object (by creating the corresponding annotationContext)
 	 */
 	@Test
-	public void testUpdateAnnotationToVideo()
+	public void testUpdateAnnotationToObject()
 	{
 		//AnnotationsClass cl = new AnnotationsClass();
 		MiniClient c = new MiniClient();
@@ -418,32 +423,32 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
-			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\" }", "application/json", "*/*", new Pair[]{});
-            assertEquals(200, addVideo.getHttpCode());
-            assertTrue(addVideo.getResponse().trim().contains("id")); 
-			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
+			//add a new object
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\" }", "application/json", "*/*", new Pair[]{});
+            assertEquals(200, addObjectCollection.getHttpCode());
+            assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
+			System.out.println("Result of 'testUpdateAnnotationToObject': " + addObjectCollection.getResponse());
 			try{	
-				object = (JSONObject) JSONValue.parseWithException(addVideo.getResponse());
+				object = (JSONObject) JSONValue.parseWithException(addObjectCollection.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			String objectId = (String) object.get(new String("id"));
 			
-			//check if video exists -> should pass
-			//retrieve the video information
-			ClientResponse selectVideo=c.sendRequest("GET", mainPath +"objects/" + objectId + "?part=id", ""); 
-            assertEquals(200, selectVideo.getHttpCode());
-            assertTrue(selectVideo.getResponse().trim().contains(objectId)); 
-			System.out.println("Result of get video @ 'testUpdateAnnotationToVideo': " + selectVideo.getResponse().trim());
+			//check if object exists -> should pass
+			//retrieve the object information
+			ClientResponse selectObject=c.sendRequest("GET", mainPath +"objects/" + objectId + "?part=id", ""); 
+            assertEquals(200, selectObject.getHttpCode());
+            assertTrue(selectObject.getResponse().trim().contains(objectId)); 
+			System.out.println("Result of get object @ 'testUpdateAnnotationToObject': " + selectObject.getResponse().trim());
 			
-			//create a new annotation for the video
-			ClientResponse addAnnotation=c.sendRequest("POST", mainPath + "annotations", "{\"collection\": \"TextTypeAnnotation\","
+			//create a new annotation for the object
+			ClientResponse addAnnotation=c.sendRequest("POST", mainPath + "annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" , \"objectId\": " + "\"" + objectId + "\"" + ","
 					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
-			System.out.println("Result of insert  'testCreateAnnotationNode': " + addAnnotation.getResponse().trim());
+			System.out.println("Result of insert  'testUpdateAnnotationToObject': " + addAnnotation.getResponse().trim());
 			try{	
 				annotation = (JSONObject) JSONValue.parseWithException(addAnnotation.getResponse());
 			} catch (ParseException e1) {
@@ -456,17 +461,17 @@ public class ServiceTest {
 			ClientResponse selectAnnotation=c.sendRequest("GET", mainPath +"objects/" + annotationId +"?part=id,title", ""); 
             assertEquals(200, selectAnnotation.getHttpCode());
             assertTrue(selectAnnotation.getResponse().trim().contains(annotationId)); 
-			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectAnnotation.getResponse().trim());
+			System.out.println("Result of select in 'testUpdateAnnotationToObject': " + selectAnnotation.getResponse().trim());
 			
 			//update empty new AnnotationContext
-			ClientResponse addAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContexts/" + annotationContextId + "", "{ "
+			ClientResponse addSecondTypeAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContexts/" + annotationContextId + "", "{ "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-	        assertEquals(200, addAnnotationContext.getHttpCode());
-	        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+	        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
+	        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
+			System.out.println("Result of insertAnnotationContext @ 'testUpdateAnnotationToObject': " + addSecondTypeAnnotationContext.getResponse().trim());
 			try{	
-				annotationContext = (JSONObject) JSONValue.parseWithException(addAnnotationContext.getResponse());
+				annotationContext = (JSONObject) JSONValue.parseWithException(addSecondTypeAnnotationContext.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
@@ -476,26 +481,26 @@ public class ServiceTest {
 			ClientResponse selectAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id", ""); 
             assertEquals(200, selectAnnotationContext.getHttpCode());
             assertTrue(selectAnnotationContext.getResponse().trim().contains(annotationContextId)); 
-			System.out.println("Result of select in 'testCreateAnnotationNode': " + selectAnnotationContext.getResponse().trim());
+			System.out.println("Result of select in 'testUpdateAnnotationToObject': " + selectAnnotationContext.getResponse().trim());
 			
 			//update AnnotationContext
 			ClientResponse updateAnnotationContext=c.sendRequest("PUT", mainPath +"annotationContexts/" + annotationContextId + "", "{ "
 					+ " \"time\": \"2.167\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, updateAnnotationContext.getHttpCode());
 	        assertTrue(updateAnnotationContext.getResponse().trim().contains("2.167")); 
-			System.out.println("Result of updateAnnotationContext @ 'testUpdateAnnotationToVideo': " + updateAnnotationContext.getResponse().trim());
+			System.out.println("Result of updateAnnotationContext @ 'testUpdateAnnotationToObject': " + updateAnnotationContext.getResponse().trim());
 			
 			//check if the AnnotationContext updated
 			ClientResponse selectUpdatedAnnotationContext=c.sendRequest("GET", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "?part=id,time&collection=Annotated", ""); 
             assertEquals(200, selectUpdatedAnnotationContext.getHttpCode());
             assertTrue(selectUpdatedAnnotationContext.getResponse().trim().contains("2.167")); 
-			System.out.println("Result of select in 'testUpdateAnnotationToVideo': " + selectUpdatedAnnotationContext.getResponse().trim());
+			System.out.println("Result of select in 'testUpdateAnnotationToObject': " + selectUpdatedAnnotationContext.getResponse().trim());
 			
 			//delete AnnotationContext 
 			ClientResponse deleteAnnotationContext=c.sendRequest("DELETE", mainPath +"annotationContexts/" + annotationContextId + "", ""); 
             assertEquals(200, deleteAnnotationContext.getHttpCode());
             assertTrue(deleteAnnotationContext.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testUpdateAnnotationToVideo': " + deleteAnnotationContext.getResponse().trim());
+            System.out.println("Result of delete in 'testUpdateAnnotationToObject': " + deleteAnnotationContext.getResponse().trim());
                        
 			//check if any AnnotationContext still exists
 			
@@ -503,13 +508,13 @@ public class ServiceTest {
 			ClientResponse deleteAnnotation=c.sendRequest("DELETE", mainPath +"objects/" + annotationId + "", ""); 
             assertEquals(200, deleteAnnotation.getHttpCode());
             assertTrue(deleteAnnotation.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete annotation in 'testUpdateAnnotationToVideo': " + deleteAnnotation.getResponse().trim());
+            System.out.println("Result of delete annotation in 'testUpdateAnnotationToObject': " + deleteAnnotation.getResponse().trim());
 			
-            //delete video
-			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"objects/" + objectId + "", ""); 
-            assertEquals(200, deleteVideo.getHttpCode());
-            assertTrue(deleteVideo.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete video @ 'testUpdateAnnotationToVideo': " + deleteVideo.getResponse().trim());
+            //delete object
+			ClientResponse deleteObjectCollection=c.sendRequest("DELETE", mainPath +"objects/" + objectId + "", ""); 
+            assertEquals(200, deleteObjectCollection.getHttpCode());
+            assertTrue(deleteObjectCollection.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete object @ 'testUpdateAnnotationToObject': " + deleteObjectCollection.getResponse().trim());
 		}
 		catch(Exception e)
 		{
@@ -534,25 +539,25 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
-			//add a new video
-            ClientResponse addVideo=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
-            assertEquals(200, addVideo.getHttpCode());
-            assertTrue(addVideo.getResponse().trim().contains("id")); 
-			System.out.println("Result of 'testCreateVideoNode': " + addVideo.getResponse());
+			//add a new object
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            assertEquals(200, addObjectCollection.getHttpCode());
+            assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
+			System.out.println("Result of 'testUpdateNode': " + addObjectCollection.getResponse());
 			try{	
-				object = (JSONObject) JSONValue.parseWithException(addVideo.getResponse());
+				object = (JSONObject) JSONValue.parseWithException(addObjectCollection.getResponse());
 			} catch (ParseException e1) {
 				throw new IllegalArgumentException("Data is not valid JSON!");
 			}
 			String objectId = (String) object.get(new String("id"));
 			
 			//add a new annotation
-			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"TextTypeAnnotation\","
+			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\" , \"objectId\": " + "\"" + objectId + "\"" + ","
 					+ "\"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, result.getHttpCode());
 	        assertTrue(result.getResponse().trim().contains("id")); 
-			System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
+			System.out.println("Result of insert 'testUpdateNode': " + result.getResponse().trim());
 			try{	
 				annotation = (JSONObject) JSONValue.parseWithException(result.getResponse());
 			} catch (ParseException e1) {
@@ -593,11 +598,11 @@ public class ServiceTest {
             assertTrue(selectAgainNew.getResponse().trim().contains("not")); 
 			System.out.println("Result of select again in 'testUpdateNode': " + selectAgainNew.getResponse().trim());
 		
-			//delete video
-			ClientResponse deleteVideo=c.sendRequest("DELETE", mainPath +"objects/" + objectId +"", ""); 
-            assertEquals(200, deleteVideo.getHttpCode());
-            assertTrue(deleteVideo.getResponse().trim().contains("deleted"));
-            System.out.println("Result of delete in 'testCreateVideoNode': " + deleteVideo.getResponse().trim());
+			//delete object
+			ClientResponse deleteObjectCollection=c.sendRequest("DELETE", mainPath +"objects/" + objectId +"", ""); 
+            assertEquals(200, deleteObjectCollection.getHttpCode());
+            assertTrue(deleteObjectCollection.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testUpdateNode': " + deleteObjectCollection.getResponse().trim());
 		}
 		catch(Exception e)
 		{
@@ -623,20 +628,20 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			for (int i = 0; i < 100; i++){
-				//add a new video
-	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Videos\"}", "application/json", "*/*", new Pair[]{});
+				//add a new objectCollection
+	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
 	            assertEquals(200, result.getHttpCode());
 	            assertTrue(result.getResponse().trim().contains("id")); 
-				System.out.println("======Result of 'testCreateNodes': " + result.getResponse());
+				System.out.println("Result of 'testCreateNodes': " + result.getResponse());
 			}
 			
 			
 			for (int i = 0; i < 100; i++){
-				//add a new image
-	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"Images\"}", "application/json", "*/*", new Pair[]{});
+				//add a new objectCollectionSecond
+	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollectionSecond + "\"}", "application/json", "*/*", new Pair[]{});
 	            assertEquals(200, result.getHttpCode());
 	            assertTrue(result.getResponse().trim().contains("id")); 
-				System.out.println("======Result of 'testCreateNodes': " + result.getResponse());
+				System.out.println("Result of 'testCreateNodes': " + result.getResponse());
 			}
 			
 		}
@@ -664,41 +669,41 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
-			//get videos
-			ClientResponse selectVideos=c.sendRequest("GET", mainPath +"objects/?part=id&collection=Videos", ""); 
-            assertEquals(200, selectVideos.getHttpCode());
-            assertTrue(selectVideos.getResponse().trim().contains("id")); 
-            String responseVideo =  selectVideos.getResponse();
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseVideo);
-			responseVideo = responseVideo.replaceAll("\\W", "");
-			responseVideo = responseVideo.replaceAll("id", ",");
-			responseVideo = responseVideo.substring(1, responseVideo.length());
-			String videoIdArray[] = responseVideo.split(",");
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseVideo);
+			//get objects
+			ClientResponse selectObjectCollection=c.sendRequest("GET", mainPath +"objects/?part=id&collection=" + objectCollection + "", ""); 
+            assertEquals(200, selectObjectCollection.getHttpCode());
+            assertTrue(selectObjectCollection.getResponse().trim().contains("id")); 
+            String responseObjectCollection =  selectObjectCollection.getResponse();
+			System.out.println("Result of 'Select in testCreateAnnotations': " + responseObjectCollection);
+			responseObjectCollection = responseObjectCollection.replaceAll("\\W", "");
+			responseObjectCollection = responseObjectCollection.replaceAll("id", ",");
+			responseObjectCollection = responseObjectCollection.substring(1, responseObjectCollection.length());
+			String objectCollectionIdArray[] = responseObjectCollection.split(",");
+			System.out.println("Result of 'Select in testCreateAnnotations': " + responseObjectCollection);
 						
 			for (int i = 0; i < 100; i++){
 				//add a new text annotation
 				Random rand = new Random();
-				int videoId = rand.nextInt(videoIdArray.length);
-				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"TextTypeAnnotation\","
-						+ " \"title\": \"Annotation Text Insert " + i + "\"  , \"objectId\": " + "\"" + videoIdArray[videoId] + "\"" + ","
+				int objectCollectionId = rand.nextInt(objectCollectionIdArray.length);
+				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
+						+ " \"title\": \"Annotation Text Insert " + i + "\"  , \"objectId\": " + "\"" + objectCollectionIdArray[objectCollectionId] + "\"" + ","
 						+ " \"keywords\": \"test annotation\", \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
 		        assertEquals(200, result.getHttpCode());
 		        assertTrue(result.getResponse().trim().contains("id")); 
-				System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
+				System.out.println("Result of insert 'testCreateAnnotations': " + result.getResponse().trim());
 			}
 			
 			
 			for (int i = 0; i < 100; i++){
-				//add a new location annotation
+				//add a new annotation
 				Random rand = new Random();
-				int videoId = rand.nextInt(videoIdArray.length);
-				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"LocationTypeAnnotation\","
-						+ " \"title\": \"Location Annotation Insert " + i + "\" , \"objectId\": " + "\"" + videoIdArray[videoId] + "\"" + ","
+				int objectCollectionId = rand.nextInt(objectCollectionIdArray.length);
+				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollectionSecond + "\","
+						+ " \"title\": \"Location Annotation Insert " + i + "\" , \"objectId\": " + "\"" + objectCollectionIdArray[objectCollectionId] + "\"" + ","
 						+ " \"keywords\": \"test annotation\" , \"location\": \"Aachen\"}", "application/json", "*/*", new Pair[]{});
 		        assertEquals(200, result.getHttpCode());
 		        assertTrue(result.getResponse().trim().contains("id")); 
-				System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
+				System.out.println("Result of insert 'testCreateAnnotations': " + result.getResponse().trim());
 			}
 			
 		}
@@ -725,118 +730,118 @@ public class ServiceTest {
 		{
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
-			//get videos
-			ClientResponse selectVideos=c.sendRequest("GET", mainPath +"objects/?part=id&collection=Videos", ""); 
-            assertEquals(200, selectVideos.getHttpCode());
-            assertTrue(selectVideos.getResponse().trim().contains("id")); 
-            String responseVideo =  selectVideos.getResponse();
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseVideo);
-			responseVideo = responseVideo.replaceAll("\\W", "");
-			responseVideo = responseVideo.replaceAll("id", ",");
-			responseVideo = responseVideo.substring(1, responseVideo.length());
-			String videoIdArray[] = responseVideo.split(",");
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseVideo);
-			//get images
-			ClientResponse selectImages=c.sendRequest("GET", mainPath +"objects/?part=id&collection=Images", ""); 
-            assertEquals(200, selectImages.getHttpCode());
-            assertTrue(selectImages.getResponse().trim().contains("id")); 
-            String responseImages =  selectImages.getResponse();
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseImages);
-			responseImages = responseImages.replaceAll("\\W", "");
-			responseImages = responseImages.replaceAll("id", ",");
-			responseImages = responseImages.substring(1, responseImages.length());
-			String imagesIdArray[] = responseImages.split(",");
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseImages);
+			//get objects
+			ClientResponse selectObjectCollection=c.sendRequest("GET", mainPath +"objects/?part=id&collection=" + objectCollection + "", ""); 
+            assertEquals(200, selectObjectCollection.getHttpCode());
+            assertTrue(selectObjectCollection.getResponse().trim().contains("id")); 
+            String responseObjectCollection =  selectObjectCollection.getResponse();
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseObjectCollection);
+			responseObjectCollection = responseObjectCollection.replaceAll("\\W", "");
+			responseObjectCollection = responseObjectCollection.replaceAll("id", ",");
+			responseObjectCollection = responseObjectCollection.substring(1, responseObjectCollection.length());
+			String objectCollectionIdArray[] = responseObjectCollection.split(",");
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseObjectCollection);
+			//get objects second type
+			ClientResponse selectCollectionSecond=c.sendRequest("GET", mainPath +"objects/?part=id&collection=" + objectCollectionSecond + "", ""); 
+            assertEquals(200, selectCollectionSecond.getHttpCode());
+            assertTrue(selectCollectionSecond.getResponse().trim().contains("id")); 
+            String responseCollectionSecond =  selectCollectionSecond.getResponse();
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseCollectionSecond);
+			responseCollectionSecond = responseCollectionSecond.replaceAll("\\W", "");
+			responseCollectionSecond = responseCollectionSecond.replaceAll("id", ",");
+			responseCollectionSecond = responseCollectionSecond.substring(1, responseCollectionSecond.length());
+			String objectCollectionSecondIdArray[] = responseCollectionSecond.split(",");
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseCollectionSecond);
 			
 			//get text type annotations
-			ClientResponse selectTextAnnotation=c.sendRequest("GET", mainPath +"objects/?part=id&collection=TextTypeAnnotation", ""); 
-            assertEquals(200, selectTextAnnotation.getHttpCode());
-            assertTrue(selectTextAnnotation.getResponse().trim().contains("id")); 
-            String responseTextAnnotation =  selectTextAnnotation.getResponse();
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseTextAnnotation);
-			responseTextAnnotation = responseTextAnnotation.replaceAll("\\W", "");
-			responseTextAnnotation = responseTextAnnotation.replaceAll("id", ",");
-			responseTextAnnotation = responseTextAnnotation.substring(1, responseTextAnnotation.length());
-			String textIdArray[] = responseTextAnnotation.split(",");
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseTextAnnotation);
+			ClientResponse selectAnnotationCollection=c.sendRequest("GET", mainPath +"objects/?part=id&collection=" + annotationCollection + "", ""); 
+            assertEquals(200, selectAnnotationCollection.getHttpCode());
+            assertTrue(selectAnnotationCollection.getResponse().trim().contains("id")); 
+            String responseAnnotationCollection =  selectAnnotationCollection.getResponse();
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseAnnotationCollection);
+			responseAnnotationCollection = responseAnnotationCollection.replaceAll("\\W", "");
+			responseAnnotationCollection = responseAnnotationCollection.replaceAll("id", ",");
+			responseAnnotationCollection = responseAnnotationCollection.substring(1, responseAnnotationCollection.length());
+			String annotationCollectionIdArray[] = responseAnnotationCollection.split(",");
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseAnnotationCollection);
 			
-			//get location type annotations
-			ClientResponse selectLocationAnnotation=c.sendRequest("GET", mainPath +"objects/?part=id&collection=LocationTypeAnnotation", ""); 
-            assertEquals(200, selectLocationAnnotation.getHttpCode());
-            assertTrue(selectLocationAnnotation.getResponse().trim().contains("id")); 
-            String responseLocationAnnotation =  selectLocationAnnotation.getResponse();
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseLocationAnnotation);
-			responseLocationAnnotation = responseLocationAnnotation.replaceAll("\\W", "");
-			responseLocationAnnotation = responseLocationAnnotation.replaceAll("id", ",");
-			responseLocationAnnotation = responseLocationAnnotation.substring(1, responseLocationAnnotation.length());
-			String locationIdArray[] = responseLocationAnnotation.split(",");
-			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseLocationAnnotation);
+			//get first type annotations
+			ClientResponse selectAnnotationCollectionSecond=c.sendRequest("GET", mainPath +"objects/?part=id&collection=" + annotationCollectionSecond + "", ""); 
+            assertEquals(200, selectAnnotationCollectionSecond.getHttpCode());
+            assertTrue(selectAnnotationCollectionSecond.getResponse().trim().contains("id")); 
+            String responseAnnotationCollectionSecond =  selectAnnotationCollectionSecond.getResponse();
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseAnnotationCollectionSecond);
+			responseAnnotationCollectionSecond = responseAnnotationCollectionSecond.replaceAll("\\W", "");
+			responseAnnotationCollectionSecond = responseAnnotationCollectionSecond.replaceAll("id", ",");
+			responseAnnotationCollectionSecond = responseAnnotationCollectionSecond.substring(1, responseAnnotationCollectionSecond.length());
+			String annotationCollectionSecondIdArray[] = responseAnnotationCollectionSecond.split(",");
+			System.out.println("Result of 'Select in testCreateAnnotationContexts': " + responseAnnotationCollectionSecond);
 			
-			//create annotation context between videos and Annotations
+			//create annotation context between objects and Annotations
 			for (int i = 0; i < 100; i++){
 				Random rand = new Random();
-				int videoId = rand.nextInt(videoIdArray.length);
-				int annotationId = rand.nextInt(textIdArray.length);
+				int objectCollectionId = rand.nextInt(objectCollectionIdArray.length);
+				int annotationId = rand.nextInt(annotationCollectionIdArray.length);
 				
-				System.out.println("Result of ids: " + videoId + " " + annotationId);
+				System.out.println("Result of ids: " + objectCollectionId + " " + annotationId);
 				//add new AnnotationContext
-				ClientResponse addAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + videoIdArray[videoId] + "/" + textIdArray[annotationId] + "", "{ "
+				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionIdArray[objectCollectionId] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-		        assertEquals(200, addAnnotationContext.getHttpCode());
-		        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-				System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
+		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
+				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
 				
 				//add new AnnotationContext
-				int videoId2 = rand.nextInt(videoIdArray.length);
-				int annotationId2 = rand.nextInt(locationIdArray.length);
-				System.out.println("Result of ids: " + videoId2 + " " + annotationId2);
-				ClientResponse addLocationAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + videoIdArray[videoId2] + "/" + locationIdArray[annotationId2] + "", "{ "
+				int objectCollectionId2 = rand.nextInt(objectCollectionIdArray.length);
+				int annotationId2 = rand.nextInt(annotationCollectionSecondIdArray.length);
+				System.out.println("Result of ids: " + objectCollectionId2 + " " + annotationId2);
+				ClientResponse addFirstTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionIdArray[objectCollectionId2] + "/" + annotationCollectionSecondIdArray[annotationId2] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-		        assertEquals(200, addAnnotationContext.getHttpCode());
-		        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-				System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
+		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
+				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
 			}
 			
-			//create annotation context between images and Annotations
+			//create annotation context between objects of second type and Annotations
 			for (int i = 0; i < 100; i++){
 				Random rand = new Random();
-				int imageId = rand.nextInt(imagesIdArray.length);
-				int annotationId = rand.nextInt(textIdArray.length);
-				int imageId2 = rand.nextInt(imagesIdArray.length);
-				int annotationId2 = rand.nextInt(locationIdArray.length);
+				int objectCollectionSecondId = rand.nextInt(objectCollectionSecondIdArray.length);
+				int annotationId = rand.nextInt(annotationCollectionIdArray.length);
+				int objectCollectionSecondId2 = rand.nextInt(objectCollectionSecondIdArray.length);
+				int annotationId2 = rand.nextInt(annotationCollectionSecondIdArray.length);
 				
 				//add new AnnotationContext
-				ClientResponse addAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + imagesIdArray[imageId] + "/" + textIdArray[annotationId] + "", "{ "
+				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionSecondIdArray[objectCollectionSecondId] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-		        assertEquals(200, addAnnotationContext.getHttpCode());
-		        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-				System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
+		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
+				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
 				
 				//add new AnnotationContext
-				ClientResponse addLocationAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + imagesIdArray[imageId2] + "/" + locationIdArray[annotationId2] + "", "{ "
+				ClientResponse addFirstTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionSecondIdArray[objectCollectionSecondId2] + "/" + annotationCollectionSecondIdArray[annotationId2] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-		        assertEquals(200, addAnnotationContext.getHttpCode());
-		        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-				System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+		        assertEquals(200, addFirstTypeAnnotationContext.getHttpCode());
+		        assertTrue(addFirstTypeAnnotationContext.getResponse().trim().contains("id")); 
+				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addFirstTypeAnnotationContext.getResponse().trim());
 			}
 			
 			//create annotationcontext between Annotations
 			for (int i = 0; i < 100; i++){
 				Random rand = new Random();
-				int annotationId = rand.nextInt(textIdArray.length);
-				int annotationId2 = rand.nextInt(locationIdArray.length);
+				int annotationId = rand.nextInt(annotationCollectionIdArray.length);
+				int annotationId2 = rand.nextInt(annotationCollectionSecondIdArray.length);
 				
 				//add new AnnotationContext
-				ClientResponse addAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + locationIdArray[annotationId2] + "/" + textIdArray[annotationId] + "", "{ "
+				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + annotationCollectionSecondIdArray[annotationId2] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
 						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
-		        assertEquals(200, addAnnotationContext.getHttpCode());
-		        assertTrue(addAnnotationContext.getResponse().trim().contains("id")); 
-				System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToVideo': " + addAnnotationContext.getResponse().trim());
+		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
+		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
+				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
 			}
 			
 		}
