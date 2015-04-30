@@ -32,5 +32,6 @@
 	<classpathentry kind="lib" path="lib/commons-collections4-4.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.4.jar"/>
+	<classpathentry kind="lib" path="lib/arangodb-java-driver-2.5.3.jar"/>
 	<classpathentry kind="output" path="tmp/classes"/>
 </classpath>
