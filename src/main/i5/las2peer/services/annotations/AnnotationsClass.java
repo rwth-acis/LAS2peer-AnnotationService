@@ -343,7 +343,19 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(objectData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("Data is not valid JSON!");
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
 						
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
@@ -475,7 +487,19 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(annotationData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("Data is not valid JSON!");
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
 			
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
@@ -660,8 +684,21 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(annotationContextData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("Data is not valid JSON!");
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
+			
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
@@ -865,8 +902,21 @@ public class AnnotationsClass extends Service {
 			try {
 				o = (JSONObject) JSONValue.parseWithException(objectData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException( "Data is not valid JSON!" );
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
+			
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
@@ -1026,8 +1076,21 @@ public class AnnotationsClass extends Service {
 			try {
 				o = (JSONObject) JSONValue.parseWithException(annotationContextData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException( "Data is not valid JSON!" );
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
+			
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
@@ -1852,8 +1915,21 @@ public class AnnotationsClass extends Service {
 			try{	
 				o = (JSONObject) JSONValue.parseWithException(annotationContextData);
 			} catch (ParseException e1) {
-				throw new IllegalArgumentException("Data is not valid JSON!");
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
 			}
+			
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
 				
@@ -2151,7 +2227,6 @@ public class AnnotationsClass extends Service {
 		String getSourceObjectByID = "";
 		String returnStatement = " return i";
 		JSONArray objectsJSON = new JSONArray();
-		JSONObject object = null;
 		
 		try {
 			conn = dbm.getConnection();
@@ -2483,7 +2558,8 @@ public class AnnotationsClass extends Service {
 			
 		}
 		//add the last object
-		modifiy.add(newJSONObject);
+		if (newJSONObject != null)
+			modifiy.add(newJSONObject);
 		
 		return modifiy;
 	}
