@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.junit.experimental.theories.ParametersSuppliedBy;
+
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
 import com.arangodb.CursorResultSet;
@@ -1551,7 +1553,7 @@ public class AnnotationsClass extends Service {
 	/**
 	 * Method to retrieve all annotations containing (some of) the given keywords
 	 * 
-	 * @param q (list of) keywords
+	 * @param query (list of) keywords
 	 * @param part part of the requested output
 	 * @param collection collection where the object is stored
 	 * @return JSONArray of objectId-neighbors together with AnnotationContext information
@@ -1672,7 +1674,7 @@ public class AnnotationsClass extends Service {
 	 * 
 	 * @param objectId id of requested object
 	 * @param part requested part of the results
-	 * @return
+	 * @return httpResponse
 	 */
 	@GET
 	@Path("objects/{objectId}")
@@ -1740,9 +1742,8 @@ public class AnnotationsClass extends Service {
 	 * Method to return all the objects in a collection
 	 * 
 	 * @param part parts needed of output
-	 * @param name graph name
 	 * @param collection collection where to find objects
-	 * @return
+	 * @return httpResponse
 	 */
 	
 	@GET
