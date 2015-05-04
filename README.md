@@ -6,19 +6,13 @@ This microService stores annotations for objects in an ArangoDB graph database. 
 
 In ArangoDB Objects and Annotations are stored in collections, and AnnotationContexts are stored in edgeCollection. With this structure we have a graph where nodes are objects/annotations and edges are AnnotationContexts. The service is based on [las2peer](https://github.com/rwth-acis/LAS2peer).
 
-**Table of Contents**
-- [Requirements](#)
-- [Build](#Build)
-- [Start](#)
-- [License](#)
-
 ##Requirements
 
 * Installed Java 7 JDK
 * Installed Apache Ant
 * Installed [ArangoDB 2.4.5](https://www.arangodb.com/download)
 
-#Build
+##Build
 
 First, create the Annotations Service database, refer to: [Database](https://github.com/rwth-acis/las2peer-annotationService/blob/master/Database.md).
 
