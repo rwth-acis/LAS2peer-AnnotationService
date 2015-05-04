@@ -3,11 +3,17 @@
 Explanation of the API together with examples
 
 ## Table Of Content
-
+* [Get All Objects](#get-all-objects)  
+	* [Get All Objects of a Specific Collection](#get-all-objects-of-a-specific-collection)  
+	* [Get All Objects Without Specifying a Collection](#get-all-objects-without-specifying-a-collection)  
+	* [Get All Objects Specifying Part of the Information to Receive](#get-all-objects-specifying-part-of-the-information-to-receive)  
+[Build](#build)  
+[Start](#start)  
+[License](#license)
 
 ## Get All Objects
 
-### Get All objects of a specific collection
+### Get All Objects of a Specific Collection
    ```GET /objects?collection=Videos```
 
 #### Response
@@ -19,7 +25,7 @@ Explanation of the API together with examples
 	"_key": "277994675235"
 }]
 ```
-### Get All objects without specifying a collection
+### Get All Objects Without Specifying a Collection
    ```GET /objects```
 
 #### Response
@@ -72,7 +78,7 @@ Explanation of the API together with examples
 }]
 ```
 
-### Get All objects specifying part of the information to receive
+### Get All Objects Specifying Part of the Information to Receive
    ```GET /objects?part=id,text```
 
 #### Response
