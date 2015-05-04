@@ -11,7 +11,14 @@ Explanation of the API together with examples
    ```GET /objects?collection=Videos```
 
 #### Response
-
+```javascript
+[{
+	"id": "11634",
+	"_rev": "277994675235",
+	"_id": "Videos/277994675235",
+	"_key": "277994675235"
+}]
+```
 ### Get All objects without specifying a collection
    ```GET /objects```
 
@@ -69,5 +76,22 @@ Explanation of the API together with examples
    ```GET /objects?part=id,text```
 
 #### Response
-
+```javascript
+[{
+	"id": "11737",
+	"text": null
+}, {
+	"id": "10884",
+	"text": null
+}, {
+	"id": "11947",
+	"text": ""
+}, {
+	"id": "10963",
+	"text": ""
+}, {
+	"id": "11634",
+	"text": null
+}]
+```
 
