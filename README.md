@@ -8,7 +8,7 @@ In ArangoDB Objects and Annotations are stored in collections, and AnnotationCon
 
 **Table of Contents**
 - [Requirements](#)
-- [Build](#)
+- [Build](#Build)
 - [Start](#)
 - [License](#)
 
@@ -18,7 +18,7 @@ In ArangoDB Objects and Annotations are stored in collections, and AnnotationCon
 * Installed Apache Ant
 * Installed [ArangoDB 2.4.5](https://www.arangodb.com/download)
 
-##Build
+#Build
 
 First, create the Annotations Service database, refer to: [Database](https://github.com/rwth-acis/las2peer-annotationService/blob/master/Database.md).
 
