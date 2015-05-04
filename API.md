@@ -16,7 +16,7 @@ Explanation of the API together with examples
    ```GET /objects```
 
 #### Response
-	```JSON
+	```json
 	[
   {
     "id": "11737",
