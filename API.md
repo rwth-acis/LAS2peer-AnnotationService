@@ -2,15 +2,14 @@
 
 Explanation of the API together with examples
 
-* TOC
-{:toc}
+## Table Of Content
+
 
 ## Get All Objects
 
-   GET /objects
+   ```GET /objects```
 
 ### Response
 
-<%= headers 200 %>
-<%= json(:licenses)  %>
+
 
