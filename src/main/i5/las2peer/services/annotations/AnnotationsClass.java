@@ -37,8 +37,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.experimental.theories.ParametersSuppliedBy;
-
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
 import com.arangodb.CursorResultSet;
@@ -1569,7 +1567,8 @@ public class AnnotationsClass extends Service {
 			+ "")
 	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need "
 			+ "to be returned in the JSON. \"part\" can have values: collection, contextId, duration, id, "
-			+ "keywords, location, objectCollection, objectId, position, text, time, title.")
+			+ "keywords, location, objectCollection, objectId, position, text, time, title. To include"
+			+ " more than one part, combine values separated by \",\" ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotations retrived successfully."),
 			@ApiResponse(code = 400, message = "No defined query."),
@@ -1688,7 +1687,8 @@ public class AnnotationsClass extends Service {
 	@Summary("Retrieve given object.")
 	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns"
 			+ " that need to be returned in the JSON. \"part\" can have values: id, "
-			+ "keywords, author, annotationData, text, title.")
+			+ "keywords, author, annotationData, text, title. To include"
+			+ " more than one part, combine values separated by \",\" ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object retrived successfully."),
 			@ApiResponse(code = 404, message = "Object id does not exist."),
@@ -1762,7 +1762,8 @@ public class AnnotationsClass extends Service {
 	@Summary("List objects.")
 	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects "
 			+ "the columns that need to be returned in the JSON.  \"part\" can have values: id, "
-			+ "keywords, author, annotationData, text, title.")
+			+ "keywords, author, annotationData, text, title. To include"
+			+ " more than one part, combine values separated by \",\"")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
 			@ApiResponse(code = 404, message = "No objects found."),
@@ -1836,7 +1837,8 @@ public class AnnotationsClass extends Service {
 	@Summary("Retrieve annotationContext information between a given object and a given annotation")
 	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns"
 			+ " that need to be returned in the JSON.  \"part\" can have values: id, "
-			+ "position, time, duration.")
+			+ "position, time, duration. To include"
+			+ " more than one part, combine values separated by \",\"")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
