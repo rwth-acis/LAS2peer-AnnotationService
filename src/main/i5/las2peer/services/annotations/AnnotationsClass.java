@@ -37,8 +37,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.junit.experimental.theories.ParametersSuppliedBy;
-
 import com.arangodb.ArangoDriver;
 import com.arangodb.ArangoException;
 import com.arangodb.CursorResultSet;
@@ -472,7 +470,10 @@ public class AnnotationsClass extends Service {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = "Annotations store details like title, text of an annotations.")
 	@Summary("Create new annotation.")
-	@Notes("Requires authentication. JSON format \"collection\": \"TextTypeAnnotations\",  ...Additional data ")
+	@Notes("Requires authentication. JSON format \"collection\": \"TextTypeAnnotations\", "
+					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", "
+					+ "\"objectId\": " + "\"" + "1111" + "\"" + ","
+					+ " \"location\": \"Microservice Test Class\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotation saved successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
@@ -1063,7 +1064,7 @@ public class AnnotationsClass extends Service {
 	@Summary("Update given AnnotationContext.")
 	@Notes("Requires authentication. JSON: {  "
 			+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, \"time\": \"1.324\", "
-			+ "\"duration\": \"0.40\" }")
+			+ "\"duration\": \"1.70\" }")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContext updated successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
@@ -1564,7 +1565,10 @@ public class AnnotationsClass extends Service {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve annotations by keyword."
 			+ "")
-	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need "
+			+ "to be returned in the JSON. \"part\" can have values: collection, contextId, duration, id, "
+			+ "keywords, location, objectCollection, objectId, position, text, time, title. To include"
+			+ " more than one part, combine values separated by \",\" ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Annotations retrived successfully."),
 			@ApiResponse(code = 400, message = "No defined query."),
@@ -1681,7 +1685,10 @@ public class AnnotationsClass extends Service {
 	@Path("objects/{objectId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve given object.")
-	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Returns a JSON with the object details. Query parameter \"part\" selects the columns"
+			+ " that need to be returned in the JSON. \"part\" can have values: id, "
+			+ "keywords, author, annotationData, text, title. To include"
+			+ " more than one part, combine values separated by \",\" ")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object retrived successfully."),
 			@ApiResponse(code = 404, message = "Object id does not exist."),
@@ -1753,7 +1760,10 @@ public class AnnotationsClass extends Service {
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResourceListApi(description = "Objects that can be annotated.")
 	@Summary("List objects.")
-	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Returns a JSON with objects stored in the given collection. Query parameter \"part\" selects "
+			+ "the columns that need to be returned in the JSON.  \"part\" can have values: id, "
+			+ "keywords, author, annotationData, text, title. To include"
+			+ " more than one part, combine values separated by \",\"")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
 			@ApiResponse(code = 404, message = "No objects found."),
@@ -1825,7 +1835,10 @@ public class AnnotationsClass extends Service {
 	@Path("annotationContexts/{sourceId}/{destId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Summary("Retrieve annotationContext information between a given object and a given annotation")
-	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@Notes("Return a JSON with annotationContexts details. Query parameter \"part\" selects the columns"
+			+ " that need to be returned in the JSON.  \"part\" can have values: id, "
+			+ "position, time, duration. To include"
+			+ " more than one part, combine values separated by \",\"")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContexts selected successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
