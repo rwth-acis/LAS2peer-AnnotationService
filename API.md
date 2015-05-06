@@ -8,6 +8,7 @@ This page shows sample requests to the Annotation Service API. The response to e
 * `title`  
 * `keywords`  
 
+ To include more than one part, combine values separated by `,`.
 ## Table Of Content
 * [Retrieve Object Information](#retrieve-object-information)  
     * [Get All Objects](#get-all-objects) 
