@@ -17,6 +17,7 @@ This page shows sample requests to the Annotation Service API. The response to e
     * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
 * [Storing Objects/Annotations](#storing-objectsannotations)  
 	* [Store New Object](store-new-object)  
+	* [Store New Annotation](store-new-annotation)  
 [Build](#build)  
 [Start](#start)  
 [License](#license)
@@ -136,3 +137,25 @@ Request body:
 	"collection": "{COLLECTION_NAME}"
 }
 ```
+### Store New Annotation
+```javascript
+POST {base-url}/annotations
+Request body:
+{
+	"collection": "{COLLECTION_NAME}",
+	"objectId": "{OBJECT_ID}"
+}
+```
+
+This method will create a new annotation in the collection `COLLECTION_NAME` and in addition it will an annotationContext between the new annotation and `OBJECT_ID`. To the annotationContext will be assigned an `id`. The response will return `id` of the annotation and the id of the annotationContext in `annotationContextId`.
+
+### Store New AnnotationContext
+```javascript
+POST {base-url}/annotationContexts/{sourceId}/{destId}
+Request body:
+{
+	"position": { "x": "10", "y": "10", "z": "10"}, "time": "1.324", 
+	"duration": "0.40"
+}
+```
+This method will create an annotationContext between `sourceId` and `destId`. 
