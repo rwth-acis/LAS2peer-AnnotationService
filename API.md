@@ -19,9 +19,12 @@ This page shows sample requests to the Annotation Service API. The response to e
 	* [Store New Object](#store-new-object)  
 	* [Store New Annotation](#store-new-annotation)  
 	* [Store New AnnotationContext](#store-new-annotationcontext)  
-[Build](#build)  
-[Start](#start)  
-[License](#license)
+* [Update Objects/Annotations](#update-objectsannotations)  
+	* [Update Object](#update-object)  
+	* [Update AnnotationContext](#update-annotationcontext)
+* [Delete Objects/Annotations](#delete-objectsannotations)  
+	* [Delete Object](#delete-object)  
+	* [Delete AnnotationContext](#delete-annotationcontext)  
 
 ## Retrieve Object Information
 
@@ -160,3 +163,34 @@ Request body:
 }
 ```
 This method will create an annotationContext between `sourceId` and `destId`. 
+
+## Update Objects/Annotations
+
+### Update Object
+```javascript
+PUT {base-url}/objects/{objectId}
+Request body:
+{
+	"title": "This is an updated title"
+}
+```
+### Update AnnotationContext
+```javascript
+PUT {base-url}/annotationContexts/{annotationContextId}
+Request body:
+{
+	"duration": "1.70"
+}
+```
+
+## Delete Objects/Annotations
+
+### Delete Object
+```javascript
+DELETE {base-url}/objects/{objectId}
+```
+### Delete AnnotationContext
+```javascript
+DELETE {base-url}/annotationContexts/{annotationContextId}
+```
+
