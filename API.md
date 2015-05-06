@@ -15,6 +15,7 @@ This page shows sample requests to the Annotation Service API. The response to e
     * [Get a Specific Object](#get-a-specific-object) 
     * [Get Annotations of an Object](#get-annotations-of-an-object)  
     * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
+    * [Get AnnotationContexts](#get-annotationcontexts)  
 * [Storing Objects/Annotations](#storing-objectsannotations)  
 	* [Store New Object](#store-new-object)  
 	* [Store New Annotation](#store-new-annotation)  
@@ -130,6 +131,10 @@ The response will be:
   }
 ]
 ```
+### Get AnnotationContexts
+```GET {base-url}/annotationContexts/{sourceId}/{destId}```
+
+Retrieve annotationContext information between a `sourceId` and `destId`.
 
 ## Storing Objects/Annotations
 
