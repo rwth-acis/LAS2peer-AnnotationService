@@ -15,7 +15,8 @@ This page shows sample requests to the Annotation Service API. The response to e
     * [Get a Specific Object](#get-a-specific-object) 
     * [Get Annotations of an Object](#get-annotations-of-an-object)  
     * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
-* [Storing Objects/Annotations](#storing-objectsannotations)
+* [Storing Objects/Annotations](#storing-objectsannotations)  
+	* [Store New Object](store-new-object)  
 [Build](#build)  
 [Start](#start)  
 [License](#license)
@@ -127,3 +128,11 @@ The response will be:
 
 ## Storing Objects/Annotations
 
+### Store New Object
+```javascript
+POST {base-url}/objects
+Request body:
+{
+	"collection": "{COLLECTION_NAME}"
+}
+```
