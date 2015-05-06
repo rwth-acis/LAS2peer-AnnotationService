@@ -57,16 +57,17 @@ import net.minidev.json.parser.ParseException;
 import com.google.gson.Gson;
 
 /**
- * LAS2peer Service
+ * LAS2peer Annotations Service
  * 
  * This is a LAS2peer service used to save annotations of objects uploaded in
- * sevianno3. This service uses the LAS2peer Web-Connector for RESTful access to it.
+ * SeViAnno 3.0. This service uses the LAS2peer Web-Connector for RESTful access to it.
  * 
  */
 @Path("annotations")
 @Version("0.1.5")
 @ApiInfo(title = "Annotations Service", 
-	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p>", 
+	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p> "
+			+ "This tool can be used to store different types of annotations, for different types of objects.", 
 	termsOfServiceUrl = "", 
 	contact = "bakiu@dbis.rwth-aachen.de", 
 	license = "MIT", 
@@ -327,7 +328,7 @@ public class AnnotationsClass extends Service {
 	@Summary("Create new object.")
 	@Notes("Requires authentication. The object stores only objects id. "
 			+ " Payload specifies the collection where this item "
-			+ "should be stored. JSON: {\"collection\": \"Videos\"}")
+			+ "should be stored. JSON: { \"collection\": \"Videos\"}")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object saved successfully."),
 			@ApiResponse(code = 400, message = "JSON file is not correct."),
@@ -1687,18 +1688,18 @@ public class AnnotationsClass extends Service {
 			@ApiResponse(code = 500, message = "Internal error."), })
 	public HttpResponse getObject(@PathParam("objectId") String objectId, @QueryParam(name = "part", defaultValue = "*" ) String part) {
 		ArangoDriver conn = null;
+		JSONObject objectFromDB = null;
 		try {
-						
-			JSONObject objectFromDB = null;
-			
+									
 			//Object objectIdObj = new String("id");
 			
 			conn = dbm.getConnection();
-
+			Context.logMessage(this, conn.toString());
 			
 			objectFromDB = getObjectJSON(objectId, "", graphName, part);
 				//vertexHandle = getKeyFromJSON(new String(HANDLE), objectFromDB, false);
-						
+				
+			
 			if (objectFromDB == null){
 				// return HTTP Response on Vertex not found
 				String result = "Object is not found!";
@@ -1716,6 +1717,7 @@ public class AnnotationsClass extends Service {
 
 		} catch (Exception e) {
 			// return HTTP Response on error
+			Context.logMessage(this, objectFromDB.toString());
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
 			er.setStatus(500);
@@ -1769,7 +1771,7 @@ public class AnnotationsClass extends Service {
 			objectCollection = collection;
 			
 			conn = dbm.getConnection();
-
+			
 			objectsFromDB = getObjectsJSON (objectCollection, graphName, part);
 			
 			if (objectsFromDB.isEmpty()){
@@ -2172,6 +2174,7 @@ public class AnnotationsClass extends Service {
 			conn = dbm.getConnection();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
+			Context.logError(this, "Message: " + e.getMessage() + ". ToString: " + e.toString());
 			e.printStackTrace();
 		}
 		
@@ -2206,6 +2209,7 @@ public class AnnotationsClass extends Service {
 			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, JSONObject.class, true, 1, false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
+			Context.logError(this, "Message2: " + e.getMessage() + ". ToString2: " + e.toString());
 			e.printStackTrace();
 		}
 		Iterator<JSONObject> iteratorSource = rs.iterator();
@@ -2263,6 +2267,7 @@ public class AnnotationsClass extends Service {
 			rs = conn.executeQueryWithResultSet(getSourceObjectByID, null, JSONObject.class, true, MAX_RECORDS);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
+			Context.logError(this, "Message3: " + e.getMessage() + ". ToString3: " + e.toString());
 			e.printStackTrace();
 		}
 		
@@ -2288,6 +2293,7 @@ public class AnnotationsClass extends Service {
 			conn = dbm.getConnection();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
+			Context.logError(this, "Message4: " + e.getMessage() + ". ToString4: " + e.toString());
 			e.printStackTrace();
 		}
 		
@@ -2304,6 +2310,7 @@ public class AnnotationsClass extends Service {
 			 rs = conn.executeQueryWithResultSet(getSourceAnnotationContextByID, null, String.class, true, 1,false);
 		} catch (ArangoException e) {
 			// TODO Auto-generated catch block
+			Context.logError(this, "Message5: " + e.getMessage() + ". ToString5: " + e.toString());
 			e.printStackTrace();
 		}
 		Iterator<String> iteratorSource = rs.iterator();
@@ -2507,7 +2514,7 @@ public class AnnotationsClass extends Service {
 					newJS.remove(new String("_key"));
 					newJS.remove(new String("_rev"));
 					
-					newJSONObject.put("object", newJS);
+					newJSONObject.put("annotation", newJS);
 					
 					
 					if (o.containsKey(pathObject)){
@@ -2525,9 +2532,7 @@ public class AnnotationsClass extends Service {
 							//==================================================
 							JSONObject annotationContextJSON = (JSONObject) modifiedAnnotationContextArray.get(0);
 							
-							//modifiy.add(modifiedAnnotationContextArray);
 							annotations.add(annotationContextJSON);
-							//newJSONObject.put("annotationContext", annotationContextJSON);
 						}
 					}
 					
@@ -2559,6 +2564,8 @@ public class AnnotationsClass extends Service {
 			
 		}
 		//add the last object
+		if (annotations!=null && !annotations.isEmpty())
+			newJSONObject.put("annotationContexts", annotations);
 		if (newJSONObject != null)
 			modifiy.add(newJSONObject);
 		
@@ -2614,43 +2621,43 @@ public class AnnotationsClass extends Service {
 		//maps.add(item);
 		
 		//item.clear();
-		item.put("annotationPosition", "u.path.edges[0].position");
+		item.put("position", "u.path.edges[0].position");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationTime", "u.path.edges[0].time");
+		item.put("time", "u.path.edges[0].time");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationContextId", "u.path.edges[0].id");
+		item.put("contextId", "u.path.edges[0].id");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationDuration", "u.path.edges[0].duration");
+		item.put("duration", "u.path.edges[0].duration");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationCollection", "CONCAT(SPLIT(i._id, '/', 1),'')");
+		item.put("collection", "CONCAT(SPLIT(i._id, '/', 1),'')");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationId", "i.id");
+		item.put("id", "i.id");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationTitle", "i.title");
+		item.put("title", "i.title");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationText", "i.text");
+		item.put("text", "i.text");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationKeywords", "i.keywords");
+		item.put("keywords", "i.keywords");
 		//maps.add(item);
 
 		//item.clear();
-		item.put("annotationLocation", "i.annotationData.location");
+		item.put("location", "i.annotationData.location");
 		//maps.add(item);
 
 		String parts[] = part.split(",");
