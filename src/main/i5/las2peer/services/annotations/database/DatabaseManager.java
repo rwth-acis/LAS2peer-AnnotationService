@@ -38,6 +38,7 @@ public class DatabaseManager {
 		  configure.setPort(db_port);
 		  configure.setUser(username);
 		  configure.setPassword(password);
+		  configure.setRetryCount(3);
 		  configure.init();
 
 		  // Create Driver (this instance is thread-safe)
