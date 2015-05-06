@@ -18,6 +18,7 @@ This page shows sample requests to the Annotation Service API. The response to e
 * [Storing Objects/Annotations](#storing-objectsannotations)  
 	* [Store New Object](store-new-object)  
 	* [Store New Annotation](store-new-annotation)  
+	* [Store New AnnotationContext](store-new-annotationcontext)  
 [Build](#build)  
 [Start](#start)  
 [License](#license)
