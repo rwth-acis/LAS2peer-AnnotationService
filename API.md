@@ -1,34 +1,33 @@
-# API Explanation
+# Sample API Requests
 
-Explanation of the API together with examples
+This page shows sample requests to the Annotation Service API. The response to each request is the JSON representation of a resource. The `part` parameter in the request specifies which portions of the resource are included in the response. For instance, for an annotation resource parts can be:  
+
+* `id`  
+* `author`  
+* `text`  
+* `title`  
+* `keywords`  
 
 ## Table Of Content
-* [Get All Objects](#get-all-objects)  
-	* [Get All Objects of a Specific Collection](#get-all-objects-of-a-specific-collection)  
-	* [Get All Objects Without Specifying a Collection](#get-all-objects-without-specifying-a-collection)  
-	* [Get All Objects Specifying Part of the Information to Receive](#get-all-objects-specifying-part-of-the-information-to-receive)  
+* [Retrieve Object Information](#retrieve-object-information)  
+    * [Get All Objects](#get-all-objects) 
+    * [Get All Objects of a Specific Collection](#get-all-objects-of-a-specific-collection)   
+    * [Get a Specific Object](#get-a-specific-object) 
+    * [Get Annotations of an Object](#get-annotations-of-an-object)  
+    * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
+* [Storing Objects/Annotations](#storing-objectsannotations)
 [Build](#build)  
 [Start](#start)  
 [License](#license)
 
-## Get All Objects
+## Retrieve Object Information
 
-### Get All Objects of a Specific Collection
-   ```GET /objects?collection=Videos```
+### Get All Objects
+  
+```GET {base-url}/objects```
 
-#### Response
-```javascript
-[{
-	"id": "11634",
-	"_rev": "277994675235",
-	"_id": "Videos/277994675235",
-	"_key": "277994675235"
-}]
-```
-### Get All Objects Without Specifying a Collection
-   ```GET /objects```
+The response of this request is a JSON array containing information for all the objects in the database. For objects it returns the `id` value and in additional for annotations among others returns `author`, `title`, `text` etc..
 
-#### Response
 ```javascript
 [{
 	"id": "11737",
@@ -36,33 +35,13 @@ Explanation of the API together with examples
 	"_id": "Images/278067813411",
 	"_key": "278067813411"
 }, {
-	"id": "10884",
-	"_rev": "277044665379",
-	"_id": "Images/277044665379",
-	"_key": "277044665379"
-}, {
-	"id": "11947",
-	"_rev": "278241221667",
-	"author": {
-		"name": "adam",
-		"uri": ""
-	},
-	"title": "Location Annotation Insert 28",
-	"text": "",
-	"keywords": "test annotation",
-	"_id": "LocationTypeAnnotation/278241221667",
-	"annotationData": {
-		"location": "Aachen"
-	},
-	"_key": "278241221667"
-}, {
 	"id": "10963",
 	"_rev": "277119573027",
 	"author": {
 		"name": "adam",
 		"uri": ""
 	},
-	"title": "Annotation Text Insert 54",
+	"title": "Annotation Text Insert",
 	"text": "",
 	"keywords": "test annotation",
 	"_id": "TextTypeAnnotation/277119573027",
@@ -78,26 +57,73 @@ Explanation of the API together with examples
 }]
 ```
 
-### Get All Objects Specifying Part of the Information to Receive
-   ```GET /objects?part=id,text```
+### Get All Objects of a Specific Collection
+   ```GET {base-url}/objects?collection={COLLECTION_NAME}```
 
-#### Response
+This request would return all objects of `COLLECTION_NAME` collection. 
+
+### Get a Specific Object
+   ```GET {base-url}/objects/{objectId}```
+
+This request will return all properties of `objectId`.
+
+### Get Annotations of an Object
+
+```GET {base-url}/objects/{objectId}/annotations```
+
+This request will return all annotations of `objectId`. Paramerts here include:  
+
+* Collection, (**optional**) to specify the type of annotations you need to retrieve.
+
+The response will be:  
+
 ```javascript
-[{
-	"id": "11737",
-	"text": null
-}, {
-	"id": "10884",
-	"text": null
-}, {
-	"id": "11947",
-	"text": ""
-}, {
-	"id": "10963",
-	"text": ""
-}, {
-	"id": "11634",
-	"text": null
-}]
+{
+  "annotations": [
+    {
+      "annotation": {...}
+    },
+    "annotationContexts": [
+        {...},
+		{...}
+      ]
+}
 ```
+
+### Get Annotations containing Keyword(s)
+
+```GET {base-url}/annotations?q={keyword1},{keyword2}```
+
+This request will return all annotations and objects containing `{keyword1}`, `{keyword2}`. Parameters here include:  
+
+* q, list of keywords
+* part, (**optional**)
+* Collection, (**optional**) to specify the type of annotations you need to retrieve.
+
+The response will be:  
+
+```javascript
+[
+  {
+    "collection": "LocationTypeAnnotation",
+    "contextId": "11460",
+    "duration": "0.40",
+    "id": "11019",
+    "keywords": "test annotation",
+    "location": "Aachen",
+    "objectCollection": "Images",
+    "objectId": "10848",
+    "position": {
+      "x": "10",
+      "y": "10",
+      "z": "10"
+    },
+    "text": "",
+    "time": "1.324",
+    "title": "Location Annotation Insert 10"
+  }
+]
+```
+
+## Storing Objects/Annotations
 
