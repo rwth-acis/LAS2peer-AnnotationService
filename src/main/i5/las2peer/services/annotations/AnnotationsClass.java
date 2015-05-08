@@ -62,7 +62,7 @@ import com.google.gson.Gson;
  * 
  */
 @Path("annotations")
-@Version("0.1.5")
+@Version("0.1.6")
 @ApiInfo(title = "Annotations Service", 
 	description = "<p>A RESTful service for storing annotations for different kinds of objects.</p> "
 			+ "This tool can be used to store different types of annotations, for different types of objects.", 
@@ -370,7 +370,7 @@ public class AnnotationsClass extends Service {
 				
 				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
 				
-				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+				id = getId();
 				
 				if (!id.equals("") && !graphCollection.equals("")) {
 					
@@ -516,7 +516,7 @@ public class AnnotationsClass extends Service {
 				Object graphCollectionObj = new String("collection");
 				Object objectIdObj = new String("objectId");
 				
-				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+				id = getId();
 				
 				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
 				
@@ -719,7 +719,7 @@ public class AnnotationsClass extends Service {
 				sourceId = source;//getKeyFromJSON(annotationContextSourceObj, o, true);
 				destId = dest;//getKeyFromJSON(annotationContextDestObj, o, true);
 				
-				id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+				id = getId();
 				
 				if ( !sourceId.equals("") && !destId.equals("") ){
 					
@@ -815,7 +815,7 @@ public class AnnotationsClass extends Service {
 		String destHandle = "";
 		JSONObject o;
 		ArangoDriver conn = null;
-		String id = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+		String id = getId();
 		
 		if ( !source.equals("") && !destination.equals("") ){
 			sourceHandle = getObjectHandle(source, "", graphName);
@@ -1999,11 +1999,11 @@ public class AnnotationsClass extends Service {
 							//get author information
 							JSONObject author = getAuthorInformation();
 							
-							String newid = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+							String newid = getId();
 							annotation = conn.graphCreateVertex(graphName, "Annotations", new Annotation(newid, newAnnotation, author), true);
 							destHandle = annotation.getDocumentHandle();
 							//add new annotationContext
-							String newid2 = getId(new Object(){}.getClass().getEnclosingMethod().getName(), ((UserAgent) getActiveAgent()).getLoginName());
+							String newid2 = getId();
 							newAnnotationContext.put("id", newid2);
 							annotationContext = conn.graphCreateEdge(graphName, "newAnnotated", null, sourceHandle, destHandle, newAnnotationContext, null);
 						}
@@ -2607,10 +2607,10 @@ public class AnnotationsClass extends Service {
 		
 	}
 	
-	private String getId(String callerMethod, String oidcUser){
+	private String getId(){
 		String id = "";
 		IdGenerateClientClass client = new IdGenerateClientClass(idGeneratingService);
-		id = client.sendRequest(SERVICE, callerMethod, oidcUser);
+		id = client.sendRequest(SERVICE);
 		
 		return id;
 	}
