@@ -32,11 +32,9 @@ public class IdGenerateClientClass {
 	 * Send request to the IdGenertating service. The request contains information about the 
 	 * service that called the generation, the method and the OIDC user.
 	 * @param callerService service that called the generation
-	 * @param callerMethod method from where the generation was called
-	 * @param oidcUser user that initiated the call
 	 * @return id the generated id
 	 */
-	public String sendRequest(String callerService, String callerMethod, String oidcUser){
+	public String sendRequest(String callerService){
 		
 		String output = "";
 		Scanner in = null;
@@ -49,9 +47,7 @@ public class IdGenerateClientClass {
 	        
 	        post.setHeader("User-Agent", USER_AGENT);
 	        
-	        String str = "{\"calling_service\": \"" + callerService +"\" ,"
-					+ "\"calling_method\": \"" + callerMethod +"\" ,"
-					+ "\"OIDC_user\":\"" + oidcUser + "\"}";
+	        String str = "{\"service\": \"" + callerService + "\"}";
 	        
 	        StringEntity input = new StringEntity(str);
 	        input.setContentType("application/json");
