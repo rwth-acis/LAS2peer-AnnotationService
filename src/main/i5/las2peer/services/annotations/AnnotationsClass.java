@@ -1783,7 +1783,7 @@ public class AnnotationsClass extends Service {
 			+ "keywords, author, annotationData, text, title. To include"
 			+ " more than one part, combine values separated by \",\"")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Objects selected and retured successfully."),
+			@ApiResponse(code = 200, message = "Objects selected and returned successfully."),
 			@ApiResponse(code = 404, message = "No objects found."),
 			@ApiResponse(code = 500, message = "Internal error."), })
 	public HttpResponse getObjects(@QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
@@ -1926,7 +1926,83 @@ public class AnnotationsClass extends Service {
 
 	}
 	
-		
+	/**
+	 * Method to return all collections in a graph.
+	 * @return collections in a JSONObject
+	 */
+	@GET
+	@Path("collections")
+	@Produces(MediaType.APPLICATION_JSON)
+	@ResourceListApi(description = "Collections are containers of objects.")
+	@Summary("List collections.")
+	@Notes("Returns a JSON with a list containing collection names for the configured graph.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "List returned successfully."),
+			@ApiResponse(code = 404, message = "No collections found."),
+			@ApiResponse(code = 500, message = "Internal error."), })
+	public HttpResponse getCollections() {
+		ArangoDriver conn = null;
+		try {
+			
+			JSONArray collectionsJSON = new JSONArray();
+			String getCollectionsQuery = "";
+			
+			getCollectionsQuery = "for i in _graphs Filter i._key == '" + graphName + "'"
+					+ " FOR c IN i.orphanCollections  return c ";
+			
+			conn = dbm.getConnection();
+			CursorResultSet<String> rs = null;
+			try {
+				rs = conn.executeQueryWithResultSet(getCollectionsQuery, null, String.class, true, MAX_RECORDS);
+			} catch (ArangoException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			for (String obj : rs) {
+				collectionsJSON.add(obj);
+			}
+
+			if (collectionsJSON.isEmpty()){
+				// return HTTP Response on Vertex not found
+				String result = "No collections found.";
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				r.setStatus(404);
+				return r;
+			} else {
+				// return HTTP Response on success
+				JSONObject collections = new JSONObject();
+				collections.put("collections", collectionsJSON);
+				HttpResponse r = new HttpResponse(collections.toJSONString());
+				r.setStatus(200);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}	
 	/**
 	 * Import data from AchSo! files
 	 * @param annotationContextData Data for the annotationContext we want to store.
@@ -2324,6 +2400,7 @@ public class AnnotationsClass extends Service {
 		}
 		return objectsJSON;
 	}
+	
 	/**
 	 * Get information about one annotationContext (specified id)
 	 * 
