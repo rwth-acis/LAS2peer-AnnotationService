@@ -9,6 +9,7 @@ public class Annotation{
 	private String id;
 	private JSONObject annotationData;
 	private JSONObject author;
+	private String timeStamp;
 	//private JSONObject annotation;
 	//private JSONObject position;
 	private String title;
@@ -21,6 +22,7 @@ public class Annotation{
 	private final static Object TIME = new String("time");
 	private final static Object TEXT = new String("text");
 	private final static Object KEYWORDS = new String("keywords");
+	private final static Object TIMESTAMP = new String("timeStamp");
 
 	/*public Annotation(String id, JSONObject annotationData, JSONObject author){
 			//, JSONObject position, String time) {
@@ -31,9 +33,10 @@ public class Annotation{
 		//this.time = time;
 	}*/
 	
-	public Annotation(String id, JSONObject unstructuredAnnotationData, JSONObject author) {
+	public Annotation(String id, JSONObject unstructuredAnnotationData, JSONObject author, String timeStamp) {
 		this.id = id;
 		this.author = author;
+		this.timeStamp = timeStamp;
 		annotationData = new JSONObject();
 		text = "";
 		title = "";
@@ -46,6 +49,7 @@ public class Annotation{
 		JSONObject annotation = new JSONObject();
 		annotation.put("id", id);
 		annotation.put("author", author);
+		annotation.put("timeStamp", timeStamp);
 		//annotation.put(POSITION.toString(), position);
 		annotation.put(TEXT.toString(), text);
 		annotation.put(TITLE.toString(), title);
