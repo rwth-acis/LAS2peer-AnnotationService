@@ -1271,6 +1271,7 @@ public class AnnotationsClass extends Service {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Object deleted successfully."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 403, message = "User cannot delete this object."),
 			@ApiResponse(code = 404, message = "Object not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse deleteObject(@PathParam("objectId") String objectId) {
@@ -1308,6 +1309,22 @@ public class AnnotationsClass extends Service {
 					return r;
 				}
 				
+				if (objectFromDB.containsKey("author")){
+					Object author =  objectFromDB.get("author");
+					Gson g = new Gson();				
+					String object = g.toJson(author);
+					
+					JSONObject authorJSON = (JSONObject) JSONValue.parse(object);
+					
+					if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
+						// return HTTP Response on Vertex not found
+						result = "User not authorized!";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(403);
+						return r;
+					}
+				}
 				
 				String [] objectHandleSplit = objectHandle.split("/"); 
 				objectKeyDb = objectHandleSplit[1];
@@ -1377,6 +1394,7 @@ public class AnnotationsClass extends Service {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "AnnotationContext deleted successfully."),
 			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 403, message = "User cannot delete this annotationContext."),
 			@ApiResponse(code = 404, message = "AnnotationContext not found."),
 			@ApiResponse(code = 500, message = "Internal error.") })
 	public HttpResponse deleteAnnotationContext( @PathParam("annotationContextId") String annotationContextId) {
@@ -1395,7 +1413,9 @@ public class AnnotationsClass extends Service {
 				
 				id = annotationContextId;
 				
-				annotationContextHandle = getAnnotationContextHandle(id, annotationContextCollection, graphName);
+				JSONObject annotationContextFromDB = null;								
+				annotationContextFromDB = getAnnotationContextJSON(id, annotationContextCollection, graphName);
+				annotationContextHandle = getKeyFromJSON(HANDLE, annotationContextFromDB, false);
 				
 				if (annotationContextHandle.equals("")){
 					// return HTTP Response on AnnotationContext not found
@@ -1405,6 +1425,24 @@ public class AnnotationsClass extends Service {
 					r.setStatus(404);
 					return r;
 				}
+				
+				if (annotationContextFromDB.containsKey("author")){
+					Object author =  annotationContextFromDB.get("author");
+					Gson g = new Gson();				
+					String object = g.toJson(author);
+					
+					JSONObject authorJSON = (JSONObject) JSONValue.parse(object);
+					
+					if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
+						// return HTTP Response on Vertex not found
+						result = "User not authorized!";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(403);
+						return r;
+					}
+				}
+				
 				String [] annotationContextHandleSplit = annotationContextHandle.split("/"); 
 				annotationContextKeyDb = annotationContextHandleSplit[1];
 				
@@ -2099,12 +2137,12 @@ public class AnnotationsClass extends Service {
 							String timeStamp = getTimeStamp();
 							
 							String newid = getId();
-							annotation = conn.graphCreateVertex(graphName, "Annotations", new Annotation(newid, newAnnotation, author, timeStamp), true);
+							annotation = conn.graphCreateVertex(graphName, "Annotations", newid, new Annotation(newid, newAnnotation, author, timeStamp), true);
 							destHandle = annotation.getDocumentHandle();
 							//add new annotationContext
 							String newid2 = getId();
 							newAnnotationContext.put("id", newid2);
-							annotationContext = conn.graphCreateEdge(graphName, "newAnnotated", null, sourceHandle, destHandle, newAnnotationContext, null);
+							annotationContext = conn.graphCreateEdge(graphName, "newAnnotated", newid2, sourceHandle, destHandle, newAnnotationContext, null);
 						}
 				}
 				result = "Comleted Succesfully";
