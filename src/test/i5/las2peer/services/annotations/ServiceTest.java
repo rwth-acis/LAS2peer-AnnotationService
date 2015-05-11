@@ -136,6 +136,34 @@ public class ServiceTest {
 	}
 	
 	/**
+	 * Tests the AnnotationService for getting all collections
+	 */
+	@Test
+	public void testGetCollections()
+	{
+		//AnnotationsClass cl = new AnnotationsClass();
+		MiniClient c = new MiniClient();
+		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+		try
+		{
+			c.setLogin(Long.toString(testAgent.getId()), testPass);
+			
+			//retrieve the collection information
+			ClientResponse select=c.sendRequest("GET", mainPath +"collections", ""); 
+            assertEquals(200, select.getHttpCode());
+            assertTrue(select.getResponse().trim().contains(objectCollection)); 
+			System.out.println("Result of select in 'testGetCollections': " + select.getResponse().trim());
+			
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			fail ( "Exception: " + e );
+		}
+		
+	}
+	
+	/**
 	 * Tests the AnnotationService for adding new nodes (for objects)
 	 */
 	@Test
