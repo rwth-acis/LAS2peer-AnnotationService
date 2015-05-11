@@ -8,7 +8,8 @@ This page shows sample requests to the Annotation Service API. The response to e
 * `title`  
 * `keywords`  
 
- To include more than one part, combine values separated by `,`.
+ To include more than one part, combine values separated by `,`. 
+For each insert in the database, it is stored automatically `author` and `timeStamp` information.
 ## Table Of Content
 * [Retrieve Object Information](#retrieve-object-information)  
     * [Get All Objects](#get-all-objects) 
@@ -17,6 +18,7 @@ This page shows sample requests to the Annotation Service API. The response to e
     * [Get Annotations of an Object](#get-annotations-of-an-object)  
     * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
     * [Get AnnotationContexts](#get-annotationcontexts)  
+    * [Get Collections](#get-collections)  
 * [Storing Objects/Annotations](#storing-objectsannotations)  
 	* [Store New Object](#store-new-object)  
 	* [Store New Annotation](#store-new-annotation)  
@@ -136,6 +138,11 @@ The response will be:
 ```GET {base-url}/annotationContexts/{sourceId}/{destId}```
 
 Retrieve annotationContext information between a `sourceId` and `destId`.
+
+### Get Collections
+```GET {base-url}/collections```
+
+Retrieve collection names for all collections of the graph.
 
 ## Storing Objects/Annotations
 
