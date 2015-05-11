@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -93,6 +95,7 @@ public class AnnotationsClass extends Service {
 	private final static Object AUTHOR = new String("author");
 	private final static Object NAME = new String("name");
 	private final static Object URI = new String("uri");
+	private final static Object TIMESTAMP = new String("timeStamp");
 	
 	private final static String SERVICE = "Annotations";
 	
@@ -361,7 +364,6 @@ public class AnnotationsClass extends Service {
 						
 			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
 					.getId()) {
-				
 				conn = dbm.getConnection();
 				String id = "";
 				String graphCollection = "";
@@ -375,6 +377,13 @@ public class AnnotationsClass extends Service {
 				if (!id.equals("") && !graphCollection.equals("")) {
 					
 						o.put("id",id);
+						
+						//Insert author, timeStamp information
+						JSONObject author = getAuthorInformation();
+						String timeStamp = getTimeStamp();
+						
+						o.put(AUTHOR.toString(), author);
+						o.put(TIMESTAMP.toString(),timeStamp);
 						
 						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, graphCollection, o, true);
 						if(newObject.getCode() == SUCCESSFUL_INSERT && !newObject.isError()){
@@ -522,9 +531,12 @@ public class AnnotationsClass extends Service {
 				
 				if (!id.equals("") && !graphCollection.equals("")) {
 					if ( getObjectHandle(id , graphCollection, graphName).equals("")){
-						//Insert author information
+						//Insert author, timeStamp information
 						JSONObject author = getAuthorInformation();
+						String timeStamp = getTimeStamp();
+						
 						//o.put(AUTHOR.toString(), author);
+						//o.put(TIMESTAMP.toString(),timeStamp);
 						
 						String objectId = getKeyFromJSON(objectIdObj, o, true);
 						
@@ -540,7 +552,7 @@ public class AnnotationsClass extends Service {
 						}
 						
 						
-						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o, author), true);
+						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o, author, timeStamp), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
 							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId());
@@ -742,9 +754,12 @@ public class AnnotationsClass extends Service {
 				//insert the new AnnotationContext
 				if (getAnnotationContextHandle(id, annotationContextCollection, graphName).equals("")){
 					
-					//Insert author information
+					//Insert author, timestamp information
 					JSONObject author = getAuthorInformation();
+					String timeStamp = getTimeStamp();
+					
 					o.put(AUTHOR.toString(), author);
+					o.put(TIMESTAMP.toString(), timeStamp);
 					
 					//Insert id information
 					o.put("id", id);
@@ -832,9 +847,12 @@ public class AnnotationsClass extends Service {
 			
 			
 			o = new JSONObject();
-			//Insert author information
-			JSONObject author = getAuthorInformation();
+			//Insert author, timeStamp information
+			JSONObject author = getAuthorInformation(); 
+			String timeStamp = getTimeStamp();
+			
 			o.put(AUTHOR.toString(), author);
+			o.put(TIMESTAMP.toString(), timeStamp);
 			
 			//Insert id information
 			o.put("id", id);
@@ -1996,11 +2014,12 @@ public class AnnotationsClass extends Service {
 								newAnnotationContext.put("time", newAnnotation.get(time));
 								newAnnotation.remove(time);
 							}
-							//get author information
+							//get author, timestamp information
 							JSONObject author = getAuthorInformation();
+							String timeStamp = getTimeStamp();
 							
 							String newid = getId();
-							annotation = conn.graphCreateVertex(graphName, "Annotations", new Annotation(newid, newAnnotation, author), true);
+							annotation = conn.graphCreateVertex(graphName, "Annotations", new Annotation(newid, newAnnotation, author, timeStamp), true);
 							destHandle = annotation.getDocumentHandle();
 							//add new annotationContext
 							String newid2 = getId();
@@ -2067,6 +2086,10 @@ public class AnnotationsClass extends Service {
 		return value;
 	}
 	
+	/**
+	 * Method to create a JSONObject containing information about the user signed in
+	 * @return authorInformation
+	 */
 	private JSONObject getAuthorInformation(){
 		JSONObject authorInformation = new JSONObject();
 		//Serializable userdata =  ((UserAgent) getActiveAgent()).getUserData();
@@ -2074,6 +2097,18 @@ public class AnnotationsClass extends Service {
 		authorInformation.put(NAME.toString(), (String)((UserAgent) getActiveAgent()).getLoginName());
 		authorInformation.put(URI.toString(), "");
 		return authorInformation;
+	}
+	
+	/**
+	 * Method to create a JSONObject containing the timestamp
+	 * @return timeStamp
+	 */
+	private String getTimeStamp(){
+		Timestamp timeStamp = null;
+		Date date = new Date();
+		
+		timeStamp = new Timestamp(date.getTime());
+		return timeStamp.toString();
 	}
 	
 	/**
