@@ -385,7 +385,7 @@ public class AnnotationsClass extends Service {
 						o.put(AUTHOR.toString(), author);
 						o.put(TIMESTAMP.toString(),timeStamp);
 						
-						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, graphCollection, o, true);
+						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, graphCollection, id, o, true);
 						if(newObject.getCode() == SUCCESSFUL_INSERT && !newObject.isError()){
 							JSONObject newObj = newObject.getEntity();
 							// return
@@ -552,7 +552,7 @@ public class AnnotationsClass extends Service {
 						}
 						
 						
-						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, new Annotation(id, o, author, timeStamp), true);
+						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, new Annotation(id, o, author, timeStamp), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
 							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId());
@@ -765,7 +765,7 @@ public class AnnotationsClass extends Service {
 					o.put("id", id);
 					
 					//Insert AnnotationContext
-					EdgeEntity<?> newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, null, sourceHandle, destHandle, o, null);
+					EdgeEntity<?> newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, id, sourceHandle, destHandle, o, null);
 				
 					if (newAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
 						JSONObject newAnnotContextData = getAnnotationContextJSONByHandle(
@@ -866,7 +866,7 @@ public class AnnotationsClass extends Service {
 			}
 			EdgeEntity<?> newAnnotationContext;
 			try {
-				newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, null, sourceHandle, destHandle, o, null);
+				newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, id, sourceHandle, destHandle, o, null);
 			} catch (ArangoException e) {
 				e.printStackTrace();
 				return null;
@@ -1295,16 +1295,20 @@ public class AnnotationsClass extends Service {
 						
 				id = objectId;
 				
-				objectHandle = getObjectHandle(id, objectCollection, graphName);
+				JSONObject objectFromDB = null;								
+				objectFromDB = getObjectJSON(id, objectCollection, graphName);
+				objectHandle = getKeyFromJSON(HANDLE, objectFromDB, false);
 				
 				if (objectHandle.equals("")){
 					// return HTTP Response on Vertex not found
-					result = "Vertex is not found!";
+					result = "Object is not found!";
 					// return
 					HttpResponse r = new HttpResponse(result);
 					r.setStatus(404);
 					return r;
 				}
+				
+				
 				String [] objectHandleSplit = objectHandle.split("/"); 
 				objectKeyDb = objectHandleSplit[1];
 				objectCollection = objectHandleSplit[0];
@@ -2167,12 +2171,45 @@ public class AnnotationsClass extends Service {
 	 * @return authorInformation
 	 */
 	private JSONObject getAuthorInformation(){
-		JSONObject authorInformation = new JSONObject();
-		//Serializable userdata =  ((UserAgent) getActiveAgent()).getUserData();
+		JSONObject authorInformation = null;
+		try {
+			authorInformation = getActiveUserInfo();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		authorInformation.put(NAME.toString(), (String)((UserAgent) getActiveAgent()).getLoginName());
+		//authorInformation.put("sub", authorInformation.get("sub"));
 		authorInformation.put(URI.toString(), "");
 		return authorInformation;
+	}
+	
+	private JSONObject getActiveUserInfo() throws ParseException {
+
+		if(this.getActiveAgent() instanceof UserAgent){
+			UserAgent me = (UserAgent) this.getActiveAgent();
+			JSONObject o;
+
+			if(me.getUserData() != null){
+				System.err.println(me.getUserData());
+				o = (JSONObject) JSONValue.parseWithException((String) me.getUserData());
+			} else {
+				o = new JSONObject();
+
+				if(getActiveNode().getAnonymous().getId() == getActiveAgent().getId()){
+					o.put("sub","anonymous");		
+				} else {
+
+					String md5ide = new String(""+me.getId());
+					o.put("sub", md5ide);
+				}
+			}
+			return o;
+
+		} else {
+			return new JSONObject();
+		}
 	}
 	
 	/**
