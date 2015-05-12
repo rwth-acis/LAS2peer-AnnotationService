@@ -10,7 +10,7 @@ This page shows sample requests to the Annotation Service API. The response to e
 
  To include more than one part, combine values separated by `,`. 
 For each insert in the database, it is stored automatically `author` and `timeStamp` information.
-## Table Of Content
+## Table Of Contents
 * [Retrieve Object Information](#retrieve-object-information)  
     * [Get All Objects](#get-all-objects) 
     * [Get All Objects of a Specific Collection](#get-all-objects-of-a-specific-collection)   
@@ -18,6 +18,7 @@ For each insert in the database, it is stored automatically `author` and `timeSt
     * [Get Annotations of an Object](#get-annotations-of-an-object)  
     * [Get Annotations containing Keyword(s)](#get-annotations-containing-keywords)  
     * [Get AnnotationContexts](#get-annotationcontexts)  
+    * [Get Objects By User](#get-objects-by-user)  
     * [Get Collections](#get-collections)  
 * [Storing Objects/Annotations](#storing-objectsannotations)  
 	* [Store New Object](#store-new-object)  
@@ -100,7 +101,7 @@ The response will be:
 }
 ```
 
-### Get Annotations containing Keyword(s)
+### Get Annotations Containing Keyword(s)
 
 ```GET {base-url}/annotations?q={keyword1},{keyword2}```
 
@@ -139,6 +140,15 @@ The response will be:
 
 Retrieve annotationContext information between a `sourceId` and `destId`.
 
+### Get Objects By User
+Get objects created by the user with `sub` value equal to `userSub`
+
+```GET {base-url}/users/{userSub}/objects```
+
+Get annotations created by the user with `sub` value equal to `userSub`
+
+```GET {base-url}/users/{userSub}/annotations```
+
 ### Get Collections
 ```GET {base-url}/collections```
 
@@ -164,7 +174,18 @@ Request body:
 }
 ```
 
-This method will create a new annotation in the collection `COLLECTION_NAME` and in addition it will create an 'empty' annotationContext between the new annotation and `OBJECT_ID`. To the annotationContext will be assigned an `id`. The response will return `id` of the annotation and the id of the annotationContext in `annotationContextId`. Annotation can contain information like `title`, `text` etc. A complete list is specified in [Table 1](#new-annotation-request-body)
+This method will create a new annotation in the collection `COLLECTION_NAME` and in addition it will create an 'empty' annotationContext between the new annotation and `OBJECT_ID`. To the annotationContext will be assigned an `id`. The response will return `id` of the annotation and the id of the annotationContext in `annotationContextId`. Annotation can contain information like `title`, `text` etc. A complete list is specified in [Table 1](#new-annotation-request-body).
+
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`. For example, if one  additionally includes `"location": "Aachen"` in the request body, the annotation will look like this:
+```javascript
+{
+"annotationData" :  {
+      "location": "Aachen"
+  	},
+"text" : "This is a sample text",
+...
+}
+``` 
 
 ### Store New AnnotationContext
 ```javascript
@@ -175,7 +196,21 @@ Request body:
 	"duration": "0.40"
 }
 ```
-This method will create an annotationContext between `sourceId` and `destId`. AnnotationContext can contain information like `position`, `time` etc. A complete list is specified in [Table 2](#new-annotationcontext-request-body)
+This method will create an annotationContext between `sourceId` and `destId`. AnnotationContext can contain information like `position`, `time` etc. A complete list is specified in [Table 2](#new-annotationcontext-request-body).
+
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be also stored. For example, if one  additionally includes `"quality": "low"` in the request body, the annotation will look like this:
+```javascript
+{
+"position" :  {
+      "x": "10",
+	  "y": "15",
+	  "z": "10",
+  	},
+"time" : "1.234",
+"quality": "low,
+...
+}
+``` 
 
 ## Update Objects/Annotations
 
@@ -214,32 +249,9 @@ DELETE {base-url}/annotationContexts/{annotationContextId}
 |text   |String |Text of the annotation   |
 |keywords|String|List of keywords for this annotation|
 
-**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`. For example, if one  additionally includes `"location": "Aachen"` in the request body, the annotation will look like this:
-```javascript
-{
-"annotationData" :  {
-      "location": "Aachen"
-  	},
-"text" : "This is a sample text",
-...
-}
-``` 
 ### New AnnotationContext Request Body
 |Name   |Type   |Explanation   |
 |-------|-------|--------------|
 |position  |JSON Object |Presents coordinates where this annotation happpens in the object  `{"x":"10", "y":"5", "z":"15"}`|
 |time   |Double |Time when the annotation appears for the first time|
 |duration|Double|Duration the annotation is appearing|
-**Important Note:** The user can include additional attributes in the request body. These additional fields will be also stored. For example, if one  additionally includes `"quality": "low"` in the request body, the annotation will look like this:
-```javascript
-{
-"position" :  {
-      "x": "10",
-	  "y": "15",
-	  "z": "10",
-  	},
-"time" : "1.234",
-"quality": "low,
-...
-}
-``` 
