@@ -164,7 +164,7 @@ Request body:
 }
 ```
 
-This method will create a new annotation in the collection `COLLECTION_NAME` and in addition it will an annotationContext between the new annotation and `OBJECT_ID`. To the annotationContext will be assigned an `id`. The response will return `id` of the annotation and the id of the annotationContext in `annotationContextId`.
+This method will create a new annotation in the collection `COLLECTION_NAME` and in addition it will create an 'empty' annotationContext between the new annotation and `OBJECT_ID`. To the annotationContext will be assigned an `id`. The response will return `id` of the annotation and the id of the annotationContext in `annotationContextId`. Annotation can contain information like `title`, `text` etc. A complete list is specified in [Table 1](#new-annotation-request-body)
 
 ### Store New AnnotationContext
 ```javascript
@@ -207,3 +207,18 @@ DELETE {base-url}/objects/{objectId}
 DELETE {base-url}/annotationContexts/{annotationContextId}
 ```
 
+### New Annotation Request Body
+|Name   |Type   |Explanation   |
+|-------|-------|--------------|
+|title  |String |Title of the annotation  |
+|text   |String |Text of the annotation   |
+|keywords|String|List of keywords for this annotation|
+
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`:
+```javascript
+{
+"annotationData" :  {
+      "location": "Aachen"
+    },
+"text" : "This is a sample text"
+}``` 
