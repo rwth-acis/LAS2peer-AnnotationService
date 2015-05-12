@@ -175,7 +175,7 @@ Request body:
 	"duration": "0.40"
 }
 ```
-This method will create an annotationContext between `sourceId` and `destId`. 
+This method will create an annotationContext between `sourceId` and `destId`. AnnotationContext can contain information like `position`, `time` etc. A complete list is specified in [Table 2](#new-annotationcontext-request-body)
 
 ## Update Objects/Annotations
 
@@ -214,13 +214,32 @@ DELETE {base-url}/annotationContexts/{annotationContextId}
 |text   |String |Text of the annotation   |
 |keywords|String|List of keywords for this annotation|
 
-**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`. For example, it one  additionally includes `"location": "Aachen"` in the request body, the annotation will look like this:
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`. For example, if one  additionally includes `"location": "Aachen"` in the request body, the annotation will look like this:
 ```javascript
 {
 "annotationData" :  {
       "location": "Aachen"
-    },
+  	},
 "text" : "This is a sample text",
+...
+}
+``` 
+### New AnnotationContext Request Body
+|Name   |Type   |Explanation   |
+|-------|-------|--------------|
+|position  |JSON Object |Presents coordinates where this annotation happpens in the object  `{"x":"10", "y":"5", "z":"15"}`|
+|time   |Double |Time when the annotation appears for the first time|
+|duration|Double|Duration the annotation is appearing|
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be also stored. For example, if one  additionally includes `"quality": "low"` in the request body, the annotation will look like this:
+```javascript
+{
+"position" :  {
+      "x": "10",
+	  "y": "15",
+	  "z": "10",
+  	},
+"time" : "1.234",
+"quality": "low,
 ...
 }
 ``` 
