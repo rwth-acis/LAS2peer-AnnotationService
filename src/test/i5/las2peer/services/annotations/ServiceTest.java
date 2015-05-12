@@ -28,9 +28,7 @@ import org.junit.Test;
 
 
 /**
- * Example Test Class demonstrating a basic JUnit test structure.
- * 
- * 
+ *Test Class  
  *
  */
 public class ServiceTest {
@@ -222,6 +220,7 @@ public class ServiceTest {
 		
 	}
 	
+		
 	/**
 	 * Tests the AnnotationService for adding new nodes (as Annotation)
 	 */
