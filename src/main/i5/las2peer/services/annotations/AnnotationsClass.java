@@ -1316,13 +1316,15 @@ public class AnnotationsClass extends Service {
 					
 					JSONObject authorJSON = (JSONObject) JSONValue.parse(object);
 					
-					if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
-						// return HTTP Response on Vertex not found
-						result = "User not authorized!";
-						// return
-						HttpResponse r = new HttpResponse(result);
-						r.setStatus(403);
-						return r;
+					if (authorJSON.containsKey("sub")){
+						if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
+							// return HTTP Response on Vertex not found
+							result = "User not authorized!";
+							// return
+							HttpResponse r = new HttpResponse(result);
+							r.setStatus(403);
+							return r;
+						}
 					}
 				}
 				
@@ -1432,14 +1434,15 @@ public class AnnotationsClass extends Service {
 					String object = g.toJson(author);
 					
 					JSONObject authorJSON = (JSONObject) JSONValue.parse(object);
-					
-					if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
-						// return HTTP Response on Vertex not found
-						result = "User not authorized!";
-						// return
-						HttpResponse r = new HttpResponse(result);
-						r.setStatus(403);
-						return r;
+					if (authorJSON.containsKey("sub")){
+						if (!authorJSON.get("sub").equals(getActiveUserInfo().get("sub"))){
+							// return HTTP Response on Vertex not found
+							result = "User not authorized!";
+							// return
+							HttpResponse r = new HttpResponse(result);
+							r.setStatus(403);
+							return r;
+						}
 					}
 				}
 				
@@ -2044,7 +2047,192 @@ public class AnnotationsClass extends Service {
 			}
 		}
 
-	}	
+	}
+	
+	@GET
+	@Path("users")
+	@ResourceListApi(description = "Users working with this service.")
+	public HttpResponse getUserNull() {
+		return null;
+	}
+	
+	/**
+	 * Method to retrieve all annotations created by a given user
+	 * 
+	 * @param userSub sub of the user
+	 * @param part part of the requested output
+	 * @param collection collection where the object is stored
+	 * @return JSONArray of objectId-neighbors together with AnnotationContext information
+	 */
+	@GET
+	@Path("users/{userSub}/annotations")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Summary("Retrieve annotations created by a given user."
+			+ "")
+	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "User annotations retrived successfully."),
+			@ApiResponse(code = 404, message = "User sub does not exist."),
+			@ApiResponse(code = 500, message = "Internal error."), })
+	public HttpResponse getUserAnnotations(@PathParam("userSub") String userSub, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
+		ArangoDriver conn = null;
+		JSONArray qs = new JSONArray();
+		try {
+			
+			String collectionPart = "";
+			if (collection.equals("")){
+				collectionPart = "{ direction : 'inbound' }";
+			}else{
+				collectionPart = "{ direction : 'inbound', vertexCollectionRestriction : '"+ collection +"'}";
+			}
+			
+			String[] partsOfObject = part.split(",");
+			
+			conn = dbm.getConnection();
+						
+			String getAnnotations = "";
+			if (partsOfObject[0].equals("*")){
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ")  "
+						+ " FILTER i.author.sub == '"+ userSub +"'"
+						+ " SORT i._key return i";
+			} else {
+				String selectParts = "{";
+				for(String p:partsOfObject )
+				{
+					String partSmall = "'" + p + "': i." + p + ",";
+					selectParts += partSmall;
+				}
+				//replace last character from ',' to '}'
+				selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+				
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ")  "
+						+ " FILTER i.author.sub == '"+ userSub +"'"
+						+ " SORT i._key return " + selectParts;
+			}
+
+			CursorResultSet<JSONObject> rs = conn.executeQueryWithResultSet(getAnnotations, null, JSONObject.class, true, 0);
+			//qs.add("objects that have AnnotationContext with " + objectId );
+			for (JSONObject obj : rs) {
+				qs.add(obj);
+			}
+
+			// return HTTP Response on success
+			HttpResponse r = new HttpResponse(qs.toJSONString());
+			r.setStatus(200);
+			return r;
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
+	
+	/**
+	 * Method to retrieve all objects created by a given user
+	 * 
+	 * @param userSub sub of the user
+	 * @param part part of the requested output
+	 * @param collection collection where the object is stored
+	 * @return JSONArray of objectId-neighbors together with AnnotationContext information
+	 */
+	@GET
+	@Path("users/{userSub}/objects")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Summary("Retrieve objects created by a given user."
+			+ "")
+	@Notes("Return a JSON with the annotations. Query parameter \"part\" selects the columns that need to be returned in the JSON.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "User annotations retrived successfully."),
+			@ApiResponse(code = 404, message = "User sub does not exist."),
+			@ApiResponse(code = 500, message = "Internal error."), })
+	public HttpResponse getUserObjects(@PathParam("userSub") String userSub, @QueryParam(name = "part", defaultValue = "*" ) String part, @QueryParam(name = "collection", defaultValue = "" ) String collection) {
+		ArangoDriver conn = null;
+		JSONArray qs = new JSONArray();
+		try {
+			
+			String collectionPart = "";
+			if (collection.equals("")){
+				collectionPart = "{ direction : 'outbound' }";
+			}else{
+				collectionPart = "{ direction : 'outbound', vertexCollectionRestriction : '"+ collection +"'}";
+			}
+			
+			String[] partsOfObject = part.split(",");
+			
+			conn = dbm.getConnection();
+						
+			String getAnnotations = "";
+			if (partsOfObject[0].equals("*")){
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ")  "
+						+ " FILTER i.author.sub == '"+ userSub +"'"
+						+ " SORT i._key return i";
+			} else {
+				String selectParts = "{";
+				for(String p:partsOfObject )
+				{
+					String partSmall = "'" + p + "': i." + p + ",";
+					selectParts += partSmall;
+				}
+				//replace last character from ',' to '}'
+				selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
+				
+				getAnnotations = "for i in GRAPH_VERTICES('"+ graphName +"', null, " + collectionPart + ")  "
+						+ " FILTER i.author.sub == '"+ userSub +"'"
+						+ " SORT i._key return " + selectParts;
+			}
+
+			CursorResultSet<JSONObject> rs = conn.executeQueryWithResultSet(getAnnotations, null, JSONObject.class, true, 0);
+			//qs.add("objects that have AnnotationContext with " + objectId );
+			for (JSONObject obj : rs) {
+				qs.add(obj);
+			}
+
+			// return HTTP Response on success
+			HttpResponse r = new HttpResponse(qs.toJSONString());
+			r.setStatus(200);
+			return r;
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setStatus(500);
+			return er;
+		} finally {			
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+
+	}
 	/**
 	 * Import data from AchSo! files
 	 * @param annotationContextData Data for the annotationContext we want to store.
