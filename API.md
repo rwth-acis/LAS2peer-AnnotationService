@@ -214,11 +214,13 @@ DELETE {base-url}/annotationContexts/{annotationContextId}
 |text   |String |Text of the annotation   |
 |keywords|String|List of keywords for this annotation|
 
-**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`:
+**Important Note:** The user can include additional attributes in the request body. These additional fields will be stored under `annotationData`. For example, it one  additionally includes `"location": "Aachen"` in the request body, the annotation will look like this:
 ```javascript
 {
 "annotationData" :  {
       "location": "Aachen"
     },
-"text" : "This is a sample text"
-}``` 
+"text" : "This is a sample text",
+...
+}
+``` 
