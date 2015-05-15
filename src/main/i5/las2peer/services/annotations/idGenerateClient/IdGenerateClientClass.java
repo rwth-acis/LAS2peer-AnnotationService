@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.Scanner;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -55,8 +56,13 @@ public class IdGenerateClientClass {
 	        
 	        response = httpClient.execute(post);
 	        
+	        int status = response.getStatusLine().getStatusCode();
+	        
+	        if(status != HttpStatus.SC_OK){
+	        	
+	        }
 	        HttpEntity entity = response.getEntity();
-	        	        
+	        	        	        
 	        in = new Scanner(entity.getContent());
             if (in.hasNext()) {
             	
