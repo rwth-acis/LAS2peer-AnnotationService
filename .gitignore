@@ -12,3 +12,5 @@ etc/ivy/ivy.jar
 /.idea
 restMapping.xml
 /out
+ToDo-s.txt
+bin/start_network_debug.bat
