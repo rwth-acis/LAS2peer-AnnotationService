@@ -176,7 +176,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
 			//add a new object
-            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, result.getHttpCode());
             assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testCreateObjectNode': " + result.getResponse());
@@ -195,7 +195,7 @@ public class ServiceTest {
 			System.out.println("Result of select in 'testCreateObjectNode': " + select.getResponse().trim());
 			
 			//add same object -> should fail with corresponding message
-			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\" }"); 
+			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}"); 
             assertEquals(409, insertAgain.getHttpCode());
             assertTrue(insertAgain.getResponse().trim().contains("already")); 
 			System.out.println("Result of try insert again 'testCreateObjectNode': " + insertAgain.getResponse().trim());*/
@@ -236,7 +236,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			
 			//add a new object
-            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addObjectCollection.getHttpCode());
             assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testCreateAnnotationNode': " + addObjectCollection.getResponse());
@@ -250,7 +250,7 @@ public class ServiceTest {
 			//add a new annotation
 			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", \"objectId\": " + "\"" + objectId + "\"" + ","
-					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{}); 
+					+ " \"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 	        assertEquals(200, result.getHttpCode());
 	        assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testCreateAnnotationNode': " + result.getResponse().trim());
@@ -317,7 +317,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
 			//add a new object
-            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addObjectCollection.getHttpCode());
             assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testAddAnnotationToObject': " + addObjectCollection.getResponse());
@@ -338,7 +338,7 @@ public class ServiceTest {
 			//create a new annotation for the object
 			ClientResponse addAnnotation=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", \"objectId\": " + "\"" + objectId + "\"" + ","
-					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
+					+ " \"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testAddAnnotationToObject': " + addAnnotation.getResponse().trim());
@@ -379,7 +379,7 @@ public class ServiceTest {
 			//create a new annotationContext (with the same information)
 			ClientResponse addSecondTypeAnnotationContextAgain=c.sendRequest("POST", mainPath +"annotationContexts/" + objectId + "/" + annotationId + "", "{ "
 					+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
+					+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addSecondTypeAnnotationContextAgain.getHttpCode());
 	        assertTrue(addSecondTypeAnnotationContextAgain.getResponse().trim().contains("id")); 
 			System.out.println("Result of insertannotationContext @ 'testAddAnnotationToObject': " + addSecondTypeAnnotationContextAgain.getResponse().trim());
@@ -451,7 +451,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
 			//add a new object
-            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\" }", "application/json", "*/*", new Pair[]{});
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addObjectCollection.getHttpCode());
             assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testUpdateAnnotationToObject': " + addObjectCollection.getResponse());
@@ -472,7 +472,7 @@ public class ServiceTest {
 			//create a new annotation for the object
 			ClientResponse addAnnotation=c.sendRequest("POST", mainPath + "annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" , \"objectId\": " + "\"" + objectId + "\"" + ","
-					+ " \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
+					+ " \"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addAnnotation.getHttpCode());
 	        assertTrue(addAnnotation.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert  'testUpdateAnnotationToObject': " + addAnnotation.getResponse().trim());
@@ -567,7 +567,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);	
 			
 			//add a new object
-            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
             assertEquals(200, addObjectCollection.getHttpCode());
             assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
 			System.out.println("Result of 'testUpdateNode': " + addObjectCollection.getResponse());
@@ -581,7 +581,7 @@ public class ServiceTest {
 			//add a new annotation
 			ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\" , \"objectId\": " + "\"" + objectId + "\"" + ","
-					+ "\"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
+					+ "\"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, result.getHttpCode());
 	        assertTrue(result.getResponse().trim().contains("id")); 
 			System.out.println("Result of insert 'testUpdateNode': " + result.getResponse().trim());
@@ -656,7 +656,7 @@ public class ServiceTest {
 			c.setLogin(Long.toString(testAgent.getId()), testPass);
 			for (int i = 0; i < 100; i++){
 				//add a new objectCollection
-	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\"}", "application/json", "*/*", new Pair[]{});
+	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	            assertEquals(200, result.getHttpCode());
 	            assertTrue(result.getResponse().trim().contains("id")); 
 				System.out.println("Result of 'testCreateNodes': " + result.getResponse());
@@ -665,7 +665,7 @@ public class ServiceTest {
 			
 			for (int i = 0; i < 100; i++){
 				//add a new objectCollectionSecond
-	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollectionSecond + "\"}", "application/json", "*/*", new Pair[]{});
+	            ClientResponse result=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollectionSecond + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	            assertEquals(200, result.getHttpCode());
 	            assertTrue(result.getResponse().trim().contains("id")); 
 				System.out.println("Result of 'testCreateNodes': " + result.getResponse());
@@ -714,7 +714,7 @@ public class ServiceTest {
 				int objectCollectionId = rand.nextInt(objectCollectionIdArray.length);
 				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\","
 						+ " \"title\": \"Annotation Text Insert " + i + "\"  , \"objectId\": " + "\"" + objectCollectionIdArray[objectCollectionId] + "\"" + ","
-						+ " \"keywords\": \"test annotation\", \"location\": \"Microservice Test Class\"}", "application/json", "*/*", new Pair[]{});
+						+ " \"keywords\": \"test annotation\", \"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 		        assertEquals(200, result.getHttpCode());
 		        assertTrue(result.getResponse().trim().contains("id")); 
 				System.out.println("Result of insert 'testCreateAnnotations': " + result.getResponse().trim());
@@ -727,7 +727,7 @@ public class ServiceTest {
 				int objectCollectionId = rand.nextInt(objectCollectionIdArray.length);
 				ClientResponse result=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollectionSecond + "\","
 						+ " \"title\": \"Location Annotation Insert " + i + "\" , \"objectId\": " + "\"" + objectCollectionIdArray[objectCollectionId] + "\"" + ","
-						+ " \"keywords\": \"test annotation\" , \"location\": \"Aachen\"}", "application/json", "*/*", new Pair[]{});
+						+ " \"keywords\": \"test annotation\" , \"location\": \"Aachen\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 		        assertEquals(200, result.getHttpCode());
 		        assertTrue(result.getResponse().trim().contains("id")); 
 				System.out.println("Result of insert 'testCreateAnnotations': " + result.getResponse().trim());
@@ -814,7 +814,7 @@ public class ServiceTest {
 				//add new AnnotationContext
 				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionIdArray[objectCollectionId] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
+						+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
 		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
 				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
@@ -825,7 +825,7 @@ public class ServiceTest {
 				System.out.println("Result of ids: " + objectCollectionId2 + " " + annotationId2);
 				ClientResponse addFirstTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionIdArray[objectCollectionId2] + "/" + annotationCollectionSecondIdArray[annotationId2] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
+						+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
 		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
 				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
@@ -842,7 +842,7 @@ public class ServiceTest {
 				//add new AnnotationContext
 				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionSecondIdArray[objectCollectionSecondId] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
+						+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
 		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
 				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
@@ -850,7 +850,7 @@ public class ServiceTest {
 				//add new AnnotationContext
 				ClientResponse addFirstTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + objectCollectionSecondIdArray[objectCollectionSecondId2] + "/" + annotationCollectionSecondIdArray[annotationId2] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
+						+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 		        assertEquals(200, addFirstTypeAnnotationContext.getHttpCode());
 		        assertTrue(addFirstTypeAnnotationContext.getResponse().trim().contains("id")); 
 				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addFirstTypeAnnotationContext.getResponse().trim());
@@ -865,7 +865,7 @@ public class ServiceTest {
 				//add new AnnotationContext
 				ClientResponse addSecondTypeAnnotationContext=c.sendRequest("POST", mainPath +"annotationContexts/" + annotationCollectionSecondIdArray[annotationId2] + "/" + annotationCollectionIdArray[annotationId] + "", "{ "
 						+ "\"position\": { \"x\": \"10\", \"y\": \"10\", \"z\": \"10\"}, "
-						+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{}); 
+						+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{}); 
 		        assertEquals(200, addSecondTypeAnnotationContext.getHttpCode());
 		        assertTrue(addSecondTypeAnnotationContext.getResponse().trim().contains("id")); 
 				System.out.println("Result of insertAnnotationContext @ 'testCreateAnnotationContexts': " + addSecondTypeAnnotationContext.getResponse().trim());
