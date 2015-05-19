@@ -10,6 +10,7 @@ public class Annotation{
 	private JSONObject annotationData;
 	private JSONObject author;
 	private String timeStamp;
+	private String toolId;
 	//private JSONObject annotation;
 	//private JSONObject position;
 	private String title;
@@ -33,10 +34,11 @@ public class Annotation{
 		//this.time = time;
 	}*/
 	
-	public Annotation(String id, JSONObject unstructuredAnnotationData, JSONObject author, String timeStamp) {
+	public Annotation(String id, JSONObject unstructuredAnnotationData, JSONObject author, String timeStamp, String toolId) {
 		this.id = id;
 		this.author = author;
 		this.timeStamp = timeStamp;
+		this.toolId = toolId;
 		annotationData = new JSONObject();
 		text = "";
 		title = "";
@@ -49,11 +51,12 @@ public class Annotation{
 		JSONObject annotation = new JSONObject();
 		annotation.put("id", id);
 		annotation.put("author", author);
-		annotation.put("timeStamp", timeStamp);
+		annotation.put(TIMESTAMP.toString(), timeStamp);
 		//annotation.put(POSITION.toString(), position);
 		annotation.put(TEXT.toString(), text);
 		annotation.put(TITLE.toString(), title);
 		annotation.put(KEYWORDS.toString(), keywords);
+		annotation.put("toolId", toolId);
 		//annotation.put("time", time);
 		annotation.put("annotationData", annotationData);
 		return annotation;
