@@ -1,4 +1,6 @@
 # LAS2peer-AnnotationService
+[![Build Status](http://layers.dbis.rwth-aachen.de/jenkins/buildStatus/icon?job=LAS2peer-AnnotationService&build=10)](http://layers.dbis.rwth-aachen.de/jenkins/job/LAS2peer-AnnotationService/10/)
+
 This microService stores annotations for objects in an ArangoDB graph database. Key concepts used in this service are:
 * Objects are items which can be annotated. Typically metadata for these items is stored somewhere else, the service stores only a reference Id.
 * Annotation contain the information for annotations. 
