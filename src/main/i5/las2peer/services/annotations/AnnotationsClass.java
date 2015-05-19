@@ -96,6 +96,7 @@ public class AnnotationsClass extends Service {
 	private final static Object NAME = new String("name");
 	private final static Object URI = new String("uri");
 	private final static Object TIMESTAMP = new String("timeStamp");
+	private final static Object TOOLID = new String("toolId");
 	
 	private final static String SERVICE = "Annotations";
 	
@@ -367,14 +368,16 @@ public class AnnotationsClass extends Service {
 				conn = dbm.getConnection();
 				String id = "";
 				String graphCollection = "";
+				String toolId = "";
 				
 				Object graphCollectionObj = new String("collection");
 				
 				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
+				toolId = getKeyFromJSON(TOOLID, o, true);
 				
 				id = getId();
 				
-				if (!id.equals("") && !graphCollection.equals("")) {
+				if (!id.equals("") && !graphCollection.equals("") && !toolId.equals("")) {
 					
 						o.put("id",id);
 						
@@ -384,6 +387,7 @@ public class AnnotationsClass extends Service {
 						
 						o.put(AUTHOR.toString(), author);
 						o.put(TIMESTAMP.toString(),timeStamp);
+						o.put(TOOLID.toString(),toolId);
 						
 						DocumentEntity<JSONObject> newObject = conn.graphCreateVertex(graphName, graphCollection, id, o, true);
 						if(newObject.getCode() == SUCCESSFUL_INSERT && !newObject.isError()){
@@ -404,6 +408,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ graphCollectionObj.toString() + "\""
+							+ " and/or \"" + TOOLID.toString() + "\""
 							+ "");
 					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
@@ -521,15 +526,17 @@ public class AnnotationsClass extends Service {
 				conn = dbm.getConnection();
 				String graphCollection = "";
 				String id = "";
+				String toolId = "";
 
 				Object graphCollectionObj = new String("collection");
 				Object objectIdObj = new String("objectId");
+				toolId = getKeyFromJSON(TOOLID, o, true);
 				
 				id = getId();
 				
 				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
 				
-				if (!id.equals("") && !graphCollection.equals("")) {
+				if (!id.equals("") && !graphCollection.equals("") && !toolId.equals("")) {
 					if ( getObjectHandle(id , graphCollection, graphName).equals("")){
 						//Insert author, timeStamp information
 						JSONObject author = getAuthorInformation();
@@ -544,7 +551,7 @@ public class AnnotationsClass extends Service {
 							// return HTTP Response on error
 							HttpResponse er = new HttpResponse("Internal error: "
 									+ "Missing JSON object member with key "
-									+ "\"" + objectIdObj.toString() + "\""
+									+ "\"" + objectIdObj.toString() + "\""									
 									+ "");
 							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 							er.setStatus(400);
@@ -552,7 +559,7 @@ public class AnnotationsClass extends Service {
 						}
 						
 						
-						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, new Annotation(id, o, author, timeStamp), true);
+						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, new Annotation(id, o, author, timeStamp, toolId), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
 							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId());
@@ -592,6 +599,7 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key "
 							+ "\"" + graphCollectionObj.toString() + "\""
+							+ " and/or \"" + TOOLID.toString() + "\""
 							+ "");
 					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
@@ -724,16 +732,18 @@ public class AnnotationsClass extends Service {
 				String sourceHandle = "";
 				String destHandle = "";
 				String id = "";
+				String toolId = "";
 				
 				Object annotationContextSourceObj = new String("source");
 				Object annotationContextDestObj = new String("dest");
 				
 				sourceId = source;//getKeyFromJSON(annotationContextSourceObj, o, true);
 				destId = dest;//getKeyFromJSON(annotationContextDestObj, o, true);
+				toolId = getKeyFromJSON(TOOLID, o, true);
 				
 				id = getId();
 				
-				if ( !sourceId.equals("") && !destId.equals("") ){
+				if ( !sourceId.equals("") && !destId.equals("") &&  !toolId.equals("")){
 					
 					sourceHandle = getObjectHandle(sourceId, "", graphName);
 					//get destination handle
@@ -744,7 +754,8 @@ public class AnnotationsClass extends Service {
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ "Missing JSON object member with key \""
 							+ "\"" + annotationContextSourceObj.toString() + "\" and/or "
-							+ "\"" + annotationContextDestObj.toString() + "\" "
+							+ "\"" + annotationContextDestObj.toString() + "\" " 
+							+ " and/or \"" + TOOLID.toString() + "\""
 							+ "");
 					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(400);
@@ -760,6 +771,7 @@ public class AnnotationsClass extends Service {
 					
 					o.put(AUTHOR.toString(), author);
 					o.put(TIMESTAMP.toString(), timeStamp);
+					o.put(TOOLID.toString(), toolId);
 					
 					//Insert id information
 					o.put("id", id);
@@ -850,9 +862,11 @@ public class AnnotationsClass extends Service {
 			//Insert author, timeStamp information
 			JSONObject author = getAuthorInformation(); 
 			String timeStamp = getTimeStamp();
+			String toolId = "";
 			
 			o.put(AUTHOR.toString(), author);
 			o.put(TIMESTAMP.toString(), timeStamp);
+			o.put(TOOLID.toString(), toolId);
 			
 			//Insert id information
 			o.put("id", id);
@@ -2278,6 +2292,7 @@ public class AnnotationsClass extends Service {
 				String sourceHandle = "";
 				String destHandle = "";
 				String id = "";
+				String toolId = "AchSo!";
 				
 				Object graphCollectionObj = new String("collection");
 				Object annotationsObj = new String("annotations");
@@ -2300,6 +2315,7 @@ public class AnnotationsClass extends Service {
 					if (sourceHandle.equals("")){
 						JSONObject newNode = new JSONObject();
 						newNode.put("id", o.get(idObj));
+						newNode.put("toolId", toolId);
 						newObject = conn.graphCreateVertex(graphName, graphCollection, o, true);
 						sourceHandle = newObject.getDocumentHandle();
 					}
@@ -2325,11 +2341,12 @@ public class AnnotationsClass extends Service {
 							String timeStamp = getTimeStamp();
 							
 							String newid = getId();
-							annotation = conn.graphCreateVertex(graphName, "Annotations", newid, new Annotation(newid, newAnnotation, author, timeStamp), true);
+							annotation = conn.graphCreateVertex(graphName, "Annotations", newid, new Annotation(newid, newAnnotation, author, timeStamp, toolId), true);
 							destHandle = annotation.getDocumentHandle();
 							//add new annotationContext
 							String newid2 = getId();
 							newAnnotationContext.put("id", newid2);
+							newAnnotationContext.put("toolId", toolId);
 							annotationContext = conn.graphCreateEdge(graphName, "newAnnotated", newid2, sourceHandle, destHandle, newAnnotationContext, null);
 						}
 				}
