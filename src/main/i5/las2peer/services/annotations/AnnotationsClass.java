@@ -562,7 +562,7 @@ public class AnnotationsClass extends Service {
 						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, new Annotation(id, o, author, timeStamp, toolId), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
-							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId());
+							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
 							
 							if (emptyAnnotationContext != null){
 								JSONObject newObj = newAnnotation.getEntity().toJSON();
@@ -836,7 +836,7 @@ public class AnnotationsClass extends Service {
 		}
 	}
 	
-	private JSONObject addNewAnnotatoinContextEmpty(String source, String destination){
+	private JSONObject addNewAnnotatoinContextEmpty(String source, String destination, String toolId){
 		
 		String sourceHandle = "";
 		String destHandle = "";
@@ -862,7 +862,6 @@ public class AnnotationsClass extends Service {
 			//Insert author, timeStamp information
 			JSONObject author = getAuthorInformation(); 
 			String timeStamp = getTimeStamp();
-			String toolId = "";
 			
 			o.put(AUTHOR.toString(), author);
 			o.put(TIMESTAMP.toString(), timeStamp);
