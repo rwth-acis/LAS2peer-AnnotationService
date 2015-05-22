@@ -1,4 +1,4 @@
-package i5.las2peer.services.annotations;
+package i5.las2peer.services.annotations.annotationTypes;
 
 import com.google.gson.Gson;
 

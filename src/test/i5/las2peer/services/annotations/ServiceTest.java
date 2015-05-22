@@ -7,7 +7,7 @@ import i5.las2peer.p2p.LocalNode;
 import i5.las2peer.restMapper.data.Pair;
 import i5.las2peer.security.ServiceAgent;
 import i5.las2peer.security.UserAgent;
-import i5.las2peer.services.annotations.AnnotationsClass;
+import i5.las2peer.services.annotations.AnnotationsService;
 import i5.las2peer.testing.MockAgentFactory;
 import i5.las2peer.webConnector.WebConnector;
 import i5.las2peer.webConnector.client.ClientResponse;
@@ -43,7 +43,7 @@ public class ServiceTest {
 	private static UserAgent testAgent;
 	private static final String testPass = "adamspass";
 	
-	private static final String testServiceClass = "i5.las2peer.services.annotations.AnnotationsClass";
+	private static final String testServiceClass = "i5.las2peer.services.annotations.AnnotationsService";
 	
 	private static final String mainPath = "annotations/";
 	
@@ -129,7 +129,7 @@ public class ServiceTest {
 	@Test
 	public void testDebugMapping()
 	{
-		AnnotationsClass cl = new AnnotationsClass();
+		AnnotationsService cl = new AnnotationsService();
 		assertTrue(cl.debugMapping());
 	}
 	

@@ -25,6 +25,7 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.Context;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.annotations.annotationTypes.Annotation;
 import i5.las2peer.services.annotations.database.DatabaseManager;
 import i5.las2peer.services.annotations.idGenerateClient.IdGenerateClientClass;
 
@@ -72,7 +73,7 @@ import com.google.gson.Gson;
 	contact = "bakiu@dbis.rwth-aachen.de", 
 	license = "MIT", 
 	licenseUrl = "https://github.com/rwth-acis/las2peer-annotationService/blob/master/LICENSE")
-public class AnnotationsClass extends Service {
+public class AnnotationsService extends Service {
 
 	private String port;
 	private String host;
@@ -107,7 +108,7 @@ public class AnnotationsClass extends Service {
 	
 	GraphEntity graphNew;
 
-	public AnnotationsClass() {
+	public AnnotationsService() {
 		// read and set properties values
 		setFieldValues();
 
