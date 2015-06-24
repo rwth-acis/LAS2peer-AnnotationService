@@ -300,6 +300,88 @@ public class ServiceTest {
 		}
 	}
 	
+	
+	/**
+	 * Tests the AnnotationService for adding new PlaceTypeAnnotations
+	 */
+	@Test
+	public void testCreatePlaceTypeAnnotationNode()
+	{
+		//AnnotationsClass cl = new AnnotationsClass();
+		MiniClient c = new MiniClient();
+		c.setAddressPort(HTTP_ADDRESS, HTTP_PORT);
+		JSONObject o, object;
+		try
+		{
+			c.setLogin(Long.toString(testAgent.getId()), testPass);
+			
+			//add a new object
+            ClientResponse addObjectCollection=c.sendRequest("POST", mainPath +"objects", "{\"collection\": \"" + objectCollection + "\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
+            assertEquals(200, addObjectCollection.getHttpCode());
+            assertTrue(addObjectCollection.getResponse().trim().contains("id")); 
+			System.out.println("Result of 'testCreatePlaceTypeAnnotationNode': " + addObjectCollection.getResponse());
+			try{	
+				object = (JSONObject) JSONValue.parseWithException(addObjectCollection.getResponse());
+			} catch (ParseException e1) {
+				throw new IllegalArgumentException("Data is not valid JSON!");
+			}
+			String objectId = (String) object.get(new String("id"));
+				
+			//add a new annotation
+			ClientResponse result=c.sendRequest("POST", mainPath +"annotations/placetype", "{\"collection\": \"" + annotationCollection + "\","
+					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", \"objectId\": " + "\"" + objectId + "\"" + ","
+					+ " \"location\": \"Microservice Test Class\", \"toolId\":\"TestCase\", "
+					+ " \"geographicPosition\":{\"altitude\":\"100\", \"latitude\":\"100\", "
+					+ " \"longitude\":\"100\"} }", "application/json", "*/*", new Pair[]{}); 
+	        assertEquals(200, result.getHttpCode());
+	        assertTrue(result.getResponse().trim().contains("id")); 
+			System.out.println("Result of insert 'testCreatePlaceTypeAnnotationNode': " + result.getResponse().trim());
+			try{	
+				o = (JSONObject) JSONValue.parseWithException(result.getResponse());
+			} catch (ParseException e1) {
+				throw new IllegalArgumentException("Data is not valid JSON!");
+			}
+			String id = (String) o.get(new String("id"));
+			
+			//retrieve the annotation 			
+			//check if annotation exists
+			ClientResponse select=c.sendRequest("GET", mainPath +"objects/" + id +"?part=id,title", ""); 
+            assertEquals(200, select.getHttpCode());
+            assertTrue(select.getResponse().trim().contains("Annotation Insert Test")); 
+			System.out.println("Result of select in 'testCreatePlaceTypeAnnotationNode': " + select.getResponse().trim());
+			
+			//add same annotation
+			/*ClientResponse insertAgain=c.sendRequest("POST", mainPath +"annotations", "{\"collection\": \"" + annotationCollection + "\", 
+			 * \"Title\": \"Annotation Insert Test\" , \"Location\": \"Microservice Test Class\"}"); 
+	        assertEquals(409, insertAgain.getHttpCode());
+	        assertTrue(insertAgain.getResponse().trim().contains("already")); 
+			System.out.println("Result of insert again 'testCreateAnnotationNode': " + insertAgain.getResponse().trim());*/
+			
+			//delete annotation
+			ClientResponse delete=c.sendRequest("DELETE", mainPath +"objects/" + id +"", ""); 
+            assertEquals(200, delete.getHttpCode());
+            assertTrue(delete.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testCreatePlaceTypeAnnotationNode': " + delete.getResponse().trim());
+			
+			//check if annotation exists
+            ClientResponse selectAgain=c.sendRequest("GET", mainPath +"objects/" + id +"?part=id,title", ""); 
+            assertEquals(404, selectAgain.getHttpCode());
+            assertTrue(selectAgain.getResponse().trim().contains("not")); 
+			System.out.println("Result of select again in 'testCreatePlaceTypeAnnotationNode': " + selectAgain.getResponse().trim());
+		
+			//delete object
+			ClientResponse deleteObjectCollection=c.sendRequest("DELETE", mainPath +"objects/" + objectId +"", ""); 
+            assertEquals(200, deleteObjectCollection.getHttpCode());
+            assertTrue(deleteObjectCollection.getResponse().trim().contains("deleted"));
+            System.out.println("Result of delete in 'testCreatePlaceTypeAnnotationNode': " + deleteObjectCollection.getResponse().trim());
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			fail ( "Exception: " + e );
+		}
+	}
+	
 	/**
 	 *  Tests adding an annotation to an object (by creating the corresponding annotationContext)
 	 */
