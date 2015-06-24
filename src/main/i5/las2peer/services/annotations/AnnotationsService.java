@@ -25,6 +25,8 @@ import i5.las2peer.restMapper.tools.ValidationResult;
 import i5.las2peer.restMapper.tools.XMLCheck;
 import i5.las2peer.security.Context;
 import i5.las2peer.security.UserAgent;
+import i5.las2peer.services.annotations.annotationTypes.Annotation;
+import i5.las2peer.services.annotations.annotationTypes.PlaceTypeAnnotation;
 import i5.las2peer.services.annotations.database.DatabaseManager;
 import i5.las2peer.services.annotations.idGenerateClient.IdGenerateClientClass;
 
@@ -72,7 +74,7 @@ import com.google.gson.Gson;
 	contact = "bakiu@dbis.rwth-aachen.de", 
 	license = "MIT", 
 	licenseUrl = "https://github.com/rwth-acis/las2peer-annotationService/blob/master/LICENSE")
-public class AnnotationsClass extends Service {
+public class AnnotationsService extends Service {
 
 	private String port;
 	private String host;
@@ -81,6 +83,7 @@ public class AnnotationsClass extends Service {
 	private String database;
 	private String graphName;
 	private String annotationContextCollection;
+	private String placeTypeAnnotationCollection;
 	private String enableCURLLogger;
 	private String idGeneratingService;
 	private DatabaseManager dbm;
@@ -96,9 +99,12 @@ public class AnnotationsClass extends Service {
 	private final static Object NAME = new String("name");
 	private final static Object URI = new String("uri");
 	private final static Object TIMESTAMP = new String("timeStamp");
+	private final static Object LASTUPDATE = new String("lastUpdate");
 	private final static Object TOOLID = new String("toolId");
 	
 	private final static String SERVICE = "Annotations";
+	
+	private final static String geographicPositionElements[] = {"altitude","latitude","longitude"};
 	
 	//depricated but still needs to be as a query parameter
 	private final static int MAX_RECORDS = 100;
@@ -107,7 +113,7 @@ public class AnnotationsClass extends Service {
 	
 	GraphEntity graphNew;
 
-	public AnnotationsClass() {
+	public AnnotationsService() {
 		// read and set properties values
 		setFieldValues();
 
@@ -400,6 +406,7 @@ public class AnnotationsClass extends Service {
 							// return HTTP Response on error
 							String response = newObject.getErrorNumber() + ", " + newObject.getErrorMessage();
 							HttpResponse er = new HttpResponse("Internal error: Cannot add object. " + response +".");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 							er.setStatus(500);
 							return er;
 						}				
@@ -426,6 +433,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {
@@ -439,6 +447,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -452,6 +461,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -465,6 +475,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -583,6 +594,7 @@ public class AnnotationsClass extends Service {
 							// return HTTP Response on error
 							String response = newAnnotation.getErrorNumber() + ", " + newAnnotation.getErrorMessage();
 							HttpResponse er = new HttpResponse("Internal error: Cannot add object. " + response +".");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 							er.setStatus(500);
 							return er;
 						}
@@ -619,6 +631,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {
@@ -632,6 +645,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -645,6 +659,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -658,6 +673,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -665,6 +681,225 @@ public class AnnotationsClass extends Service {
 		}
 	}
 
+	/**
+	 * Add new object, for a PlaceTypeAnnotation. The collection where this object is added is specified
+	 * in the received JSON object. 
+	 * @param annotationData PlaceTypeAnnotation details that need to be saved. The data come in a JSON format
+	 * @return HttpResponse
+	 */
+	@POST
+	@Path("annotations/placetype")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	@ResourceListApi(description = "PlaceTypeAnnotations store details like title, text of an annotations"
+			+ " and the geographicPosition that is specific for an PlaceTypeAnnotation.")
+	@Summary("Create new annotation.")
+	@Notes("Requires authentication. JSON format \"collection\": \"TextTypeAnnotations\", "
+					+ " \"title\": \"Annotation Insert Test\" ,\"keywords\": \"test annotation\", "
+					+ "\"objectId\": " + "\"" + "1111" + "\"" + ","
+					+ " \"location\": \"Microservice Test Class\", \"geographicPosition\":{ \"altitude\":\"100\", "
+									+ "\"latitude\":\"100\", \"longtitude\":\"100\" } }")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Annotation saved successfully."),
+			@ApiResponse(code = 400, message = "JSON file is not correct."),
+			@ApiResponse(code = 401, message = "User is not authenticated."),
+			@ApiResponse(code = 409, message = "Annotation already exists."),
+			@ApiResponse(code = 500, message = "Internal error.") })
+	public HttpResponse addNewPlaceTypeAnnotation(@ContentParam String annotationData) {
+
+		String result = "";
+		ArangoDriver conn = null;
+		PreparedStatement stmnt = null;
+		ResultSet rs = null;
+		try {
+			JSONObject o;
+			try{	
+				o = (JSONObject) JSONValue.parseWithException(annotationData);
+			} catch (ParseException e1) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			} catch (ClassCastException e) {
+				// return HTTP Response on error
+				HttpResponse er = new HttpResponse("Error: "
+						+ "Payload cannot be parsed. Please, make sure it is correct!");
+				er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+				er.setStatus(400);
+				return er;
+			}
+			
+			if (getActiveAgent().getId() != getActiveNode().getAnonymous()
+					.getId()) {
+				
+				conn = dbm.getConnection();
+				String graphCollection = "";
+				String id = "";
+				String toolId = "";
+				JSONObject geoPosition = null;
+
+				Object graphCollectionObj = new String("collection");
+				Object objectIdObj = new String("objectId");
+				Object objectGeoPosObj = new String("geographicPosition");
+				
+				toolId = getKeyFromJSON(TOOLID, o, true);
+				geoPosition= getJSONKeyFromJSON(objectGeoPosObj, o, true);
+								
+				id = getId();
+				
+				graphCollection = getKeyFromJSON(graphCollectionObj, o, true);
+				
+				if (!id.equals("") && !graphCollection.equals("") && !toolId.equals("") && geoPosition!=null) {
+					if ( getObjectHandle(id , graphCollection, graphName).equals("")){
+						//Insert author, timeStamp information
+						JSONObject author = getAuthorInformation();
+						String timeStamp = getTimeStamp();
+						
+						//o.put(AUTHOR.toString(), author);
+						//o.put(TIMESTAMP.toString(),timeStamp);
+						
+						String objectId = getKeyFromJSON(objectIdObj, o, true);
+						//JSONObject geoPositionValue = convertStringToJSON(geoPosition);
+						
+						if (objectId.equals("")){
+							// return HTTP Response on error
+							HttpResponse er = new HttpResponse("Internal error: "
+									+ "Missing JSON object member with key "
+									+ "\"" + objectIdObj.toString() + "\""									
+									+ "");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+							er.setStatus(400);
+							return er;
+						}
+						
+						if (!checkGeographicPosition(geoPosition)){
+							// return HTTP Response on error
+							HttpResponse er = new HttpResponse("Internal error: "
+									+ "Geographic position was not specified correctly"
+									+ " according the format { \"altitude\":{VALUE}, "
+									+ "\"latitude\":{VALUE}, \"longtitude\":{VALUE} }"								
+									+ "");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+							er.setStatus(400);
+							return er;
+						}
+						
+						PlaceTypeAnnotation placeType = new PlaceTypeAnnotation(id, o, author, timeStamp, toolId, geoPosition);
+						DocumentEntity<PlaceTypeAnnotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, placeType, true);
+				
+						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
+							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
+							
+							if (emptyAnnotationContext != null){
+								JSONObject newObj = newAnnotation.getEntity().toJSON();
+								newObj.put("annotationContextId", emptyAnnotationContext.get(new String("annotationContextId")));
+								// return
+								HttpResponse r = new HttpResponse(newObj.toJSONString());
+								r.setStatus(200);
+								return r;
+							}else{
+								// return HTTP Response on error
+								String response = "Could not create an AnnotationContext.";
+								HttpResponse er = new HttpResponse("Internal error: " + response +".");
+								er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+								er.setStatus(500);
+								return er;
+							}
+						}else{
+							// return HTTP Response on error
+							String response = newAnnotation.getErrorNumber() + ", " + newAnnotation.getErrorMessage();
+							HttpResponse er = new HttpResponse("Internal error: Cannot add object. " + response +".");
+							er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+							er.setStatus(500);
+							return er;
+						}
+					}else{
+						// return HTTP Response on object exists
+						result = "Object already exists!";
+						// return
+						HttpResponse r = new HttpResponse(result);
+						r.setStatus(409);
+						return r;
+					}					
+				}else {
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ "Missing JSON object member with key "
+							+ "\"" + graphCollectionObj.toString() + "\""
+							+ " and/or \"" + TOOLID.toString() + "\""
+							+ " and/or \"" + objectGeoPosObj.toString() + "\""
+							+ "");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+					er.setStatus(400);
+					return er;
+				}
+				
+			} else {
+				result = "User in not authenticated";
+
+				// return
+				HttpResponse r = new HttpResponse(result);
+				r.setStatus(401);
+				return r;
+			}
+
+		} catch (Exception e) {
+			// return HTTP Response on error
+			HttpResponse er = new HttpResponse("Internal error: "
+					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+			er.setStatus(500);
+			return er;
+		} finally {
+			// free resources if exception or not
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (stmnt != null) {
+				try {
+					stmnt.close();
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+					er.setStatus(500);
+					return er;
+				}
+			}
+			if (conn != null) {
+				try {
+					conn = null;
+				} catch (Exception e) {
+					Context.logError(this, e.getMessage());
+
+					// return HTTP Response on error
+					HttpResponse er = new HttpResponse("Internal error: "
+							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
+					er.setStatus(500);
+					return er;
+				}
+			}
+		}
+	}
+
+	
 	@POST
 	@Path("annotationContexts")
 	@ResourceListApi(description = " stores the relation data between an object and an annotations.")
@@ -771,6 +1006,7 @@ public class AnnotationsClass extends Service {
 					
 					o.put(AUTHOR.toString(), author);
 					o.put(TIMESTAMP.toString(), timeStamp);
+					o.put(LASTUPDATE.toString(), timeStamp);
 					o.put(TOOLID.toString(), toolId);
 					
 					//Insert id information
@@ -792,6 +1028,7 @@ public class AnnotationsClass extends Service {
 					}else{
 						// return HTTP Response on error
 						HttpResponse er = new HttpResponse("Internal error: Cannot add annotationContext. Error Code " + newAnnotationContext.getCode() + ".");
+						er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 						er.setStatus(500);
 						return er;
 					}
@@ -817,6 +1054,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {
@@ -829,6 +1067,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -865,6 +1104,7 @@ public class AnnotationsClass extends Service {
 			
 			o.put(AUTHOR.toString(), author);
 			o.put(TIMESTAMP.toString(), timeStamp);
+			o.put(LASTUPDATE.toString(), timeStamp);
 			o.put(TOOLID.toString(), toolId);
 			
 			//Insert id information
@@ -1029,6 +1269,12 @@ public class AnnotationsClass extends Service {
 						objectFromDB.put((String)key,  o.get(key));
 				}
 				
+				//write the new update time
+				if(objectFromDB.containsKey(LASTUPDATE)){
+					objectFromDB.remove(LASTUPDATE);
+					objectFromDB.put((String) LASTUPDATE,  getTimeStamp());
+				}
+				
 				String [] objectHandleSplit = objectHandle.split("/"); 
 				objectKeyDb = objectHandleSplit[1];
 				objectCollection = objectHandleSplit[0];
@@ -1045,6 +1291,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: Cannot update object. "
 							+ "Error Code " + updatedObject.getCode() + ", " + updatedObject.getErrorMessage() + ".");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1062,6 +1309,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1074,6 +1322,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1219,10 +1468,16 @@ public class AnnotationsClass extends Service {
 					annotationContextFromDB.put((String)key,  o.get(key));
 				}
 				
+				//write the new update time
+				if(annotationContextFromDB.containsKey(LASTUPDATE)){
+					annotationContextFromDB.remove(LASTUPDATE);
+					annotationContextFromDB.put((String) LASTUPDATE,  getTimeStamp());
+				}
+				
 				String [] annotationContextHandleSplit = annotationContextHandle.split("/"); 
 				annotationContextKeyDb = annotationContextHandleSplit[1];
 				
-				
+				//update the database
 				EdgeEntity<?> updatedAnnotationContext = conn.graphUpdateEdge(graphName, annotationContextCollection, annotationContextKeyDb, annotationContextFromDB, true);
 				if ( updatedAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
 
@@ -1233,6 +1488,7 @@ public class AnnotationsClass extends Service {
 				} else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: Cannot update AnnotationContext. Error Code " + updatedAnnotationContext.getCode() + ".");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1250,6 +1506,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1262,6 +1519,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1357,6 +1615,7 @@ public class AnnotationsClass extends Service {
 				} else {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: Cannot update object. Error Code " + deletedObject.getCode() + ".");
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1608,6 +1867,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1620,6 +1880,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1730,6 +1991,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1742,6 +2004,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1803,6 +2066,7 @@ public class AnnotationsClass extends Service {
 			Context.logMessage(this, objectFromDB.toString());
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1815,6 +2079,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1879,6 +2144,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1891,6 +2157,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -1964,6 +2231,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -1976,6 +2244,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -2042,6 +2311,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -2054,6 +2324,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -2138,6 +2409,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -2150,6 +2422,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -2227,6 +2500,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {			
@@ -2239,6 +2513,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -2367,6 +2642,7 @@ public class AnnotationsClass extends Service {
 			// return HTTP Response on error
 			HttpResponse er = new HttpResponse("Internal error: "
 					+ e.getMessage());
+			er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 			er.setStatus(500);
 			return er;
 		} finally {
@@ -2379,6 +2655,7 @@ public class AnnotationsClass extends Service {
 					// return HTTP Response on error
 					HttpResponse er = new HttpResponse("Internal error: "
 							+ e.getMessage());
+					er.setHeader("Content-Type", MediaType.TEXT_PLAIN);
 					er.setStatus(500);
 					return er;
 				}
@@ -2399,6 +2676,20 @@ public class AnnotationsClass extends Service {
 		String value = "";
 		if(json.containsKey(key)){
 			value = (String) json.get(key);
+			if(remove)
+			{
+				json.remove(key);
+			}
+			
+		}
+		return value;
+	}
+	
+	private JSONObject getJSONKeyFromJSON(Object key, JSONObject json, boolean remove)
+	{
+		JSONObject value = null;
+		if(json.containsKey(key)){
+			value = (JSONObject) json.get(key);
 			if(remove)
 			{
 				json.remove(key);
@@ -3082,6 +3373,28 @@ public class AnnotationsClass extends Service {
 		
 		return returnPart;
 	}
+	
+	public boolean checkGeographicPosition(JSONObject geographicPosition){
+		for(String key:geographicPositionElements){
+			if(!geographicPosition.containsKey(key))
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Convert a String to JSONObject.
+	 * @param jsonString input String
+	 * @return return the JSONObject
+	 */
+	private JSONObject convertStringToJSON(String jsonString){
+		Object objectJson = (Object) jsonString;
+		Gson g = new Gson();				
+		String object = g.toJson(objectJson);
+		
+		return (JSONObject) JSONValue.parse(object);
+	}
+	
 	// ================= Swagger Resource Listing & API Declarations
 	// =====================
 
