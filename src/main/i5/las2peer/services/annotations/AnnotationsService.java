@@ -2041,7 +2041,7 @@ public class AnnotationsService extends Service {
 						
 			String getAnnotations = "";
 			if (partsOfObject[0].equals("*")){
-				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedObject, {})  "
+				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedObject, {includeData: 'true'})  "
 						+ "SORT i.vertex.id, i.path.edges.time, i.path.edges.duration return i";
 			} else {
 				String selectParts = "{";
@@ -2060,7 +2060,7 @@ public class AnnotationsService extends Service {
 				//replace last character from ',' to '}'
 				selectParts = selectParts.substring(0, selectParts.length()-1) + "}";
 				
-				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedObject, {})"
+				getAnnotations = "for i in GRAPH_NEIGHBORS('"+ graphName +"', @selectedObject, {includeData: 'true'})"
 						+ " SORT i.vertex.id, i.path.edges.time, i.path.edges.duration return " + selectParts;
 			}
 			Map<String, Object> bindVars = new MapBuilder().put("selectedObject", objectFromDB).get();
@@ -2180,7 +2180,7 @@ public class AnnotationsService extends Service {
 				
 			getAnnotations = " let l = (for i in GRAPH_VERTICES('" + graphName + "', null, "+ collectionPart + ")  "
 					+ filter + " "
-					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {direction : 'inbound'}) "
+					+ "For u in GRAPH_NEIGHBORS('" + graphName + "', i, {includeData: 'true', direction : 'inbound'}) "
 					+ "return " + selectParts + " " 
 					+ " ) return unique(l)";
 			
@@ -3216,9 +3216,9 @@ public class AnnotationsService extends Service {
 		//get annotationContext handle
 		//Map<String, Object> soruceannotationContextMap = new MapBuilder().put("id",annotationContextId).get();		
 		if ( annotationContextCollection.equals("")){
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i.id == '"+ annotationContextId +"' return i._id";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true'}) FILTER i.id == '"+ annotationContextId +"' return i._id";
 		} else {
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i._id";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true', edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i._id";
 		}
 		
 		CursorResultSet<String> rs = null;
@@ -3258,9 +3258,9 @@ public class AnnotationsService extends Service {
 		//get annotationContext handle
 		//Map<String, Object> soruceannotationContextMap = new MapBuilder().put("id",annotationContextId).get();		
 		if ( annotationContextCollection.equals("")){
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i.id == '"+ annotationContextId +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true'}) FILTER i.id == '"+ annotationContextId +"' return i";
 		} else {
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true', edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i.id == '"+ annotationContextId +"' return i";
 		}
 		
 		CursorResultSet<JSONObject> rs = null;
@@ -3298,9 +3298,11 @@ public class AnnotationsService extends Service {
 		
 		//get annotationContext handle
 		if ( annotationContextCollection.equals("")){
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			//getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i == '"+ annotationContextHandle +"' return i";
 		} else {
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			//getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i == '"+ annotationContextHandle +"' return i";
 		}
 		
 		CursorEntity<JSONObject> resSourceById = null;
@@ -3361,9 +3363,9 @@ public class AnnotationsService extends Service {
 				
 		//Map<String, Object> soruceannotationContextMap = new MapBuilder().put("id",annotationContextId).get();		
 		if ( annotationContextCollection.equals("")){
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true'}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
 		} else {
-			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true', edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._from == '"+ sourceHandle +"'  &&  i._to =='" + destHandle + "' " + returnStatement;
 		}
 		
 		//Map<String, Object> bindVarsSource = new MapBuilder().put("id",soruceannotationContextMap).get();
