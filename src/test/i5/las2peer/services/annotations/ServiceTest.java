@@ -525,7 +525,7 @@ public class ServiceTest {
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\" }", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, updateAnnotationContext.getHttpCode());
 	        assertTrue(updateAnnotationContext.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertAnnotationContext @ 'testAddAnnotationToObject': " + updateAnnotationContext.getResponse().trim());
+			System.out.println("Result of update AnnotationContext @ 'testAddAnnotationToObject': " + updateAnnotationContext.getResponse().trim());
 			try{	
 				annotationContext = (JSONObject) JSONValue.parseWithException(updateAnnotationContext.getResponse());
 			} catch (ParseException e1) {
@@ -545,7 +545,7 @@ public class ServiceTest {
 					+ "\"time\": \"1.324\", \"duration\": \"0.40\", \"toolId\":\"TestCase\"}", "application/json", "*/*", new Pair[]{});
 	        assertEquals(200, addSecondTypeAnnotationContextAgain.getHttpCode());
 	        assertTrue(addSecondTypeAnnotationContextAgain.getResponse().trim().contains("id")); 
-			System.out.println("Result of insertannotationContext @ 'testAddAnnotationToObject': " + addSecondTypeAnnotationContextAgain.getResponse().trim());
+			System.out.println("Result of insertannotationContext second @ 'testAddAnnotationToObject': " + addSecondTypeAnnotationContextAgain.getResponse());
 			try{	
 				annotationContext = (JSONObject) JSONValue.parseWithException(addSecondTypeAnnotationContextAgain.getResponse());
 			} catch (ParseException e1) {
@@ -556,12 +556,12 @@ public class ServiceTest {
 			
 			//retrieve the existing annotationContexts & data 
 			ClientResponse selectAnnotationContextAgain=c.sendRequest("GET", mainPath +"annotationContexts/"
-			+ objectId + "/" + annotationId + "?part=id,position&collection=Annotated", ""); 
+			+ objectId + "/" + annotationId + "?part=id&collection=Annotated", ""); 
             assertEquals(200, selectAnnotationContextAgain.getHttpCode());
-            System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotationContextAgain.getResponse());
-            assertTrue(selectAnnotationContextAgain.getResponse().trim().contains(annotationContextId));
-            assertTrue(selectAnnotationContextAgain.getResponse().trim().contains(annotationContextId2));
-			System.out.println("Result of select in 'testAddAnnotationToObject': " + selectAnnotationContextAgain.getResponse().trim());
+            String response = selectAnnotationContextAgain.getResponse();
+            assertTrue(response.contains(annotationContextId));
+            assertTrue(response.contains(annotationContextId2));
+			System.out.println("Result of select in 'testAddAnnotationToObject': " + response.trim());
 			
 			//delete all annotationContexts 
 			ClientResponse deleteAnnotationContext=c.sendRequest("DELETE", mainPath +"annotationContexts/" + annotationContextId + "", ""); 

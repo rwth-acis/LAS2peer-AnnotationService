@@ -1237,7 +1237,7 @@ public class AnnotationsService extends Service {
 					EdgeEntity<?> newAnnotationContext = conn.graphCreateEdge(graphName, annotationContextCollection, id, sourceHandle, destHandle, o, null);
 				
 					if (newAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
-						JSONObject newAnnotContextData = getAnnotationContextJSONByHandle(
+						JSONObject newAnnotContextData = getAnnotationContextJSONByHandleWithData(
 								(String) ((JSONObject) newAnnotationContext.getEntity()).get(new String(HANDLE)), 
 								annotationContextCollection, graphName);
 						
@@ -1348,10 +1348,14 @@ public class AnnotationsService extends Service {
 			}
 		
 			if (newAnnotationContext.getCode() == SUCCESSFUL_INSERT_ANNOTATIONCONTEXT){
-				JSONObject newAnnotContextData = getAnnotationContextJSONByHandle(
+				/*JSONObject newAnnotContextData = getAnnotationContextJSONByHandle(
 						(String) ((JSONObject) newAnnotationContext.getEntity()).get(new String(HANDLE)), 
-						annotationContextCollection, graphName);
-				String annotationContextId = (String) newAnnotContextData.get(new String("id"));
+						annotationContextCollection, graphName);*/
+				
+				String annotationContextHandle = (String) ((JSONObject) newAnnotationContext.getEntity()).get(new String(HANDLE));
+				String [] annotationHandleSplit = annotationContextHandle.split("/"); 
+				
+				String annotationContextId = annotationHandleSplit[1];
 				
 				JSONObject annotationContextJSON = new JSONObject();
 				annotationContextJSON.put("annotationContextId", annotationContextId);
@@ -3303,6 +3307,50 @@ public class AnnotationsService extends Service {
 		} else {
 			//getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
 			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i == '"+ annotationContextHandle +"' return i";
+		}
+		
+		CursorEntity<String> resSourceById = null;
+		CursorResultSet<String> rs = null;
+		try {
+			resSourceById = conn.executeQuery(	getSourceAnnotationContextByID, null, String.class, true, 1);
+		} catch (ArangoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Iterator<String> iteratorSource = resSourceById.iterator();
+		if (iteratorSource.hasNext()){
+			annotationContext = new JSONObject();
+			annotationContext.put("_id", iteratorSource.next());
+		}
+		return annotationContext;
+	}
+	
+	/**
+	 * Get information about one annotationContext (specified id)
+	 * 
+	 * @param annotationContextId id of the requested annotationContext
+	 * @param annotationContextCollection collection where this annotationContext belongs
+	 * @param graphName  graph name
+	 * @return data for the specified annotationContext in JSON format
+	 */
+	private JSONObject getAnnotationContextJSONByHandleWithData( String annotationContextHandle, String annotationContextCollection, String graphName ){
+		ArangoDriver conn = null;
+		String getSourceAnnotationContextByID = "";
+		JSONObject annotationContext = null;
+		try {
+			conn = dbm.getConnection();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//get annotationContext handle
+		if ( annotationContextCollection.equals("")){
+			//getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+		} else {
+			//getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
+			getSourceAnnotationContextByID = "for i in GRAPH_EDGES('"+ graphName +"', null, {includeData: 'true', edgeCollectionRestriction : '"+ annotationContextCollection +"'}) FILTER i._id == '"+ annotationContextHandle +"' return i";
 		}
 		
 		CursorEntity<JSONObject> resSourceById = null;
