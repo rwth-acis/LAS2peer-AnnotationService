@@ -10,6 +10,7 @@ This page shows sample requests to the Annotation Service API. The response to e
 
  To include more than one part, combine values separated by `,`. 
 For each insert in the database, it is stored automatically `author` and `timeStamp` information.
+ For every insert/update request the request body MUST contain `toolId` attribute. This attribute represents the tool from which this annotation was created or updated.
 ## Table Of Contents
 * [Retrieve Object Information](#retrieve-object-information)  
     * [Get All Objects](#get-all-objects) 
@@ -44,14 +45,22 @@ The response of this request is a JSON array containing information for all the 
 	"id": "11737",
 	"_rev": "278067813411",
 	"_id": "Images/278067813411",
-	"_key": "278067813411"
+	"_key": "278067813411",
+	"toolId": "AnnotationService",
+	"author": {
+		"name": "adam",
+		"sub": "",
+		"uri": ""
+	}	
 }, {
 	"id": "10963",
 	"_rev": "277119573027",
+	"toolId": "AnnotationService",
 	"author": {
 		"name": "adam",
+		"sub": "",
 		"uri": ""
-	},
+	}
 	"title": "Annotation Text Insert",
 	"text": "",
 	"keywords": "test annotation",
@@ -64,7 +73,13 @@ The response of this request is a JSON array containing information for all the 
 	"id": "11634",
 	"_rev": "277994675235",
 	"_id": "Videos/277994675235",
-	"_key": "277994675235"
+	"_key": "277994675235",
+	"toolId": "AnnotationService",
+	"author": {
+		"name": "adam",
+		"sub": "",
+		"uri": ""
+	}
 }]
 ```
 
@@ -131,7 +146,13 @@ The response will be:
     },
     "text": "",
     "time": "1.324",
-    "title": "Location Annotation Insert 10"
+    "title": "Location Annotation Insert 10",
+	"toolId": "AnnotationService",
+	"author": {
+		"name": "adam",
+		"sub": "",
+		"uri": ""
+	}
   }
 ]
 ```
@@ -161,7 +182,8 @@ Retrieve collection names for all collections of the graph.
 POST {base-url}/objects
 Request body:
 {
-	"collection": "{COLLECTION_NAME}"
+	"collection": "{COLLECTION_NAME}",
+	"toolId": "AnnotationService"
 }
 ```
 ### Store New Annotation
@@ -170,7 +192,8 @@ POST {base-url}/annotations
 Request body:
 {
 	"collection": "{COLLECTION_NAME}",
-	"objectId": "{OBJECT_ID}"
+	"objectId": "{OBJECT_ID}",
+	"toolId": "AnnotationService"
 }
 ```
 
@@ -193,7 +216,8 @@ POST {base-url}/annotationContexts/{sourceId}/{destId}
 Request body:
 {
 	"position": { "x": "10", "y": "10", "z": "10"}, "time": "1.324", 
-	"duration": "0.40"
+	"duration": "0.40",
+	"toolId": "AnnotationService"
 }
 ```
 This method will create an annotationContext between `sourceId` and `destId`. AnnotationContext can contain information like `position`, `time` etc. A complete list is specified in [Table 2](#new-annotationcontext-request-body).
@@ -219,7 +243,8 @@ This method will create an annotationContext between `sourceId` and `destId`. An
 PUT {base-url}/objects/{objectId}
 Request body:
 {
-	"title": "This is an updated title"
+	"title": "This is an updated title",
+	"toolId": "AnnotationService"
 }
 ```
 ### Update AnnotationContext
@@ -227,7 +252,8 @@ Request body:
 PUT {base-url}/annotationContexts/{annotationContextId}
 Request body:
 {
-	"duration": "1.70"
+	"duration": "1.70",
+	"toolId": "AnnotationService"
 }
 ```
 
