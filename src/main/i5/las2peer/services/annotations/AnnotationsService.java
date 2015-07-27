@@ -576,7 +576,7 @@ public class AnnotationsService extends Service {
 						DocumentEntity<Annotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, new Annotation(id, o, author, timeStamp, toolId), true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
-							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
+							JSONObject emptyAnnotationContext = addNewAnnotationContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
 							
 							if (emptyAnnotationContext != null){
 								JSONObject newObj = newAnnotation.getEntity().toJSON();
@@ -793,7 +793,7 @@ public class AnnotationsService extends Service {
 						DocumentEntity<PlaceTypeAnnotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, placeType, true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
-							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
+							JSONObject emptyAnnotationContext = addNewAnnotationContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
 							
 							if (emptyAnnotationContext != null){
 								JSONObject newObj = newAnnotation.getEntity().toJSON();
@@ -1011,7 +1011,7 @@ public class AnnotationsService extends Service {
 						DocumentEntity<TimeTypeAnnotation> newAnnotation = conn.graphCreateVertex(graphName, graphCollection, id, timeType, true);
 				
 						if(newAnnotation.getCode() == SUCCESSFUL_INSERT && !newAnnotation.isError()){
-							JSONObject emptyAnnotationContext = addNewAnnotatoinContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
+							JSONObject emptyAnnotationContext = addNewAnnotationContextEmpty(objectId, newAnnotation.getEntity().getId(), toolId);
 							
 							if (emptyAnnotationContext != null){
 								JSONObject newObj = newAnnotation.getEntity().toJSON();
@@ -1296,7 +1296,7 @@ public class AnnotationsService extends Service {
 		}
 	}
 	
-	private JSONObject addNewAnnotatoinContextEmpty(String source, String destination, String toolId){
+	private JSONObject addNewAnnotationContextEmpty(String source, String destination, String toolId){
 		
 		String sourceHandle = "";
 		String destHandle = "";
