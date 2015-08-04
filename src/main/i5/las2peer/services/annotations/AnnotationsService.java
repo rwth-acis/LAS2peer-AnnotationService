@@ -1489,6 +1489,10 @@ public class AnnotationsService extends Service {
 							objectFromDB.remove(ANNOTATION);
 							objectFromDB.put((String)ANNOTATION, annotationDataJSON);
 						}
+						// if the key was not found anywhere else
+						annotationDataJSON.put((String)key,  o.get(key));
+						objectFromDB.remove(ANNOTATION);
+						objectFromDB.put((String)ANNOTATION, annotationDataJSON);
 						
 					}else
 						objectFromDB.put((String)key,  o.get(key));
@@ -1641,24 +1645,8 @@ public class AnnotationsService extends Service {
 						annotationContextFromDB.remove(key);
 						annotationContextFromDB.put((String)key,  o.get(key));
 						continue;
-					}
-					if (annotationContextFromDB.containsKey(ANNOTATION)){
-						Object annotationContextDatas = annotationContextFromDB.get(ANNOTATION);
-						Gson gs = new Gson();				
-						String annotationContext = gs.toJson(annotationContextDatas);
-						
-						JSONObject annotationDataContextJSON = (JSONObject) JSONValue.parse(annotationContext);
-						if (annotationDataContextJSON.containsKey(key))
-						{
-							annotationDataContextJSON.remove(key);
-							annotationDataContextJSON.put((String)key,  o.get(key));
-							annotationContextFromDB.remove(ANNOTATION);
-							annotationContextFromDB.put((String)ANNOTATION, annotationDataContextJSON);
-							continue;
-						}
-						
-					}
-					if (annotationContextFromDB.containsKey(POSITION)){
+					}			
+					else if (annotationContextFromDB.containsKey(POSITION)){
 						Object annotationContextDatas = annotationContextFromDB.get(POSITION);
 						Gson gs = new Gson();				
 						String annotationContext = gs.toJson(annotationContextDatas);
@@ -1672,6 +1660,27 @@ public class AnnotationsService extends Service {
 							annotationContextFromDB.put((String)POSITION, annotationDataContextJSON);
 							continue;
 						}
+						
+					}
+					else if (annotationContextFromDB.containsKey(ANNOTATION)){
+						Object annotationContextDatas = annotationContextFromDB.get(ANNOTATION);
+						Gson gs = new Gson();				
+						String annotationContext = gs.toJson(annotationContextDatas);
+						
+						JSONObject annotationDataContextJSON = (JSONObject) JSONValue.parse(annotationContext);
+						if (annotationDataContextJSON.containsKey(key))
+						{
+							annotationDataContextJSON.remove(key);
+							annotationDataContextJSON.put((String)key,  o.get(key));
+							annotationContextFromDB.remove(ANNOTATION);
+							annotationContextFromDB.put((String)ANNOTATION, annotationDataContextJSON);
+							continue;
+						}
+						//if the key was not found anywhere else
+						annotationDataContextJSON.put((String)key,  o.get(key));
+						annotationContextFromDB.remove(ANNOTATION);
+						annotationContextFromDB.put((String)ANNOTATION, annotationDataContextJSON);
+						
 						
 					}/*else if (annotationContextFromDB.containsKey(AUTHOR)){
 						Object annotationContextDatas = annotationContextFromDB.get(AUTHOR);
@@ -1688,9 +1697,9 @@ public class AnnotationsService extends Service {
 						}
 						
 					}*/
+					else
+						annotationContextFromDB.put((String)key,  o.get(key));
 					
-					//no changes made till now
-					annotationContextFromDB.put((String)key,  o.get(key));
 				}
 				
 				//write the new update time
